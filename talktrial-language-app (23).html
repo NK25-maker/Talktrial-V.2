@@ -1,0 +1,2849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalkTrial — Learn any language</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Urbanist:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#241E3D;
+    --ink-2:#140F26;
+    --paper:#FBF9FF;
+    --paper-2:#F0ECFB;
+    --card:#FFFFFF;
+    --stamp:#FF4FA6;
+    --stamp-dark:#D6318C;
+    --gold:#FFA930;
+    --gold-dark:#E8891A;
+    --slate:#736B94;
+    --slate-light:#A79FC4;
+    --teal:#10B583;
+    --teal-dark:#0C9068;
+    --fox:#FF8A57;
+    --fox-dark:#E8672A;
+    --fox-cream:#FFE9DC;
+    --violet:#8B5CF6;
+    --violet-dark:#6D3FDB;
+    --line: rgba(36,30,61,0.10);
+    --line-strong: rgba(36,30,61,0.18);
+    --shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 20px 50px -22px rgba(124,58,237,0.35);
+    --glow: 0 0 0 1px rgba(139,92,246,0.18), 0 0 30px -8px rgba(139,92,246,0.4);
+    --radius-s: 10px;
+    --radius-m: 18px;
+    --radius-l: 28px;
+    --font-display: 'Unbounded', sans-serif;
+    --font-body: 'Urbanist', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: var(--font-body);
+    background:
+      radial-gradient(circle at 10% 6%, rgba(139,92,246,0.14), transparent 40%),
+      radial-gradient(circle at 90% 12%, rgba(16,181,131,0.10), transparent 38%),
+      radial-gradient(circle at 50% 96%, rgba(255,79,166,0.12), transparent 46%),
+      var(--paper);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background: var(--violet); color:#fff; }
+  :focus-visible{ outline: 2px solid var(--violet); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+  #app{min-height:100vh; position:relative;}
+  button{font-family:inherit; cursor:pointer;}
+  input{font-family:inherit;}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+
+  /* ---------- shared layout bits ---------- */
+  .screen{min-height:100vh; display:flex; flex-direction:column;}
+  .center-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 20px;}
+  .paper-card{
+    background: linear-gradient(180deg, rgba(139,92,246,0.03), rgba(139,92,246,0.01)), var(--card);
+    border-radius: var(--radius-l);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--teal);
+    font-weight:600;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius: 999px;
+    padding: 13px 26px;
+    font-size:15px;
+    font-weight:600;
+    border: 1.5px solid transparent;
+    transition: transform .12s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease, filter .15s ease;
+    line-height:1;
+  }
+  .btn:active{transform: scale(0.97);}
+  .btn-primary{ background: linear-gradient(135deg, var(--violet), var(--stamp)); color:#fff; box-shadow: 0 10px 26px -10px rgba(139,92,246,0.7); }
+  .btn-primary:hover{ filter:brightness(1.12); transform:translateY(-1px); }
+  .btn-primary:disabled{ background:#E4E0F1; color:#A79FC4; box-shadow:none; cursor:not-allowed; transform:none; filter:none; }
+  .btn-stamp{ background: var(--stamp); color: #fff; box-shadow: 0 10px 22px -10px rgba(255,79,166,0.6); }
+  .btn-stamp:hover{ background: var(--stamp-dark); }
+  .btn-ghost{ background:rgba(36,30,61,0.03); border-color: var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover{ border-color: var(--violet); color:#fff; }
+  .btn-block{ width:100%; }
+  .field{
+    width:100%;
+    padding:13px 16px;
+    border-radius: var(--radius-s);
+    border: 1.5px solid var(--line-strong);
+    background: rgba(36,30,61,0.03);
+    font-size:15px;
+    color: var(--ink);
+    outline:none;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .field::placeholder{ color: var(--slate-light); }
+  .field:focus{ border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139,92,246,0.22); }
+  .field-label{ font-size:13px; font-weight:600; color: var(--slate); margin-bottom:6px; display:block; }
+
+  /* ---------- login ---------- */
+  .login-wrap{
+    min-height:100vh;
+    display:grid;
+    grid-template-columns: 1.1fr 1fr;
+    background: var(--paper);
+  }
+  .login-art{
+    position:relative;
+    padding:56px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    color: #F3F0FF;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(139,92,246,0.38), transparent 45%),
+      radial-gradient(circle at 82% 26%, rgba(255,79,166,0.30), transparent 45%),
+      radial-gradient(circle at 50% 92%, rgba(46,230,184,0.22), transparent 50%),
+      #080614;
+    overflow:hidden;
+  }
+  .brand-mark{ display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color: #F3F0FF; }
+  .brand-dot{ width:9px; height:9px; border-radius:50%; background: var(--gold); box-shadow: 0 0 10px 1px rgba(255,201,77,0.7); }
+  .login-headline{ font-family: var(--font-display); font-size:44px; line-height:1.12; font-weight:600; max-width:460px; }
+  .login-headline em{ font-style:normal; color: var(--gold); font-weight:600; }
+  .stamp-ring{
+    position:absolute; border-radius:50%; border:1.5px dashed rgba(243,240,255,0.22);
+  }
+  .route-caption{ font-size:14px; color: rgba(243,240,255,0.68); max-width:380px; line-height:1.6; }
+  .login-form-side{ display:flex; align-items:center; justify-content:center; padding:40px; background: var(--paper); }
+  .login-form{ width:100%; max-width:380px; }
+  .login-form h1{ font-family:var(--font-display); font-size:28px; margin:6px 0 4px; }
+  .login-form p.sub{ color:var(--slate); font-size:14px; margin:0 0 28px; }
+  .form-row{ margin-bottom:16px; }
+  .divider-row{ display:flex; align-items:center; gap:12px; margin:20px 0; color: var(--slate-light); font-size:12px; }
+  .divider-row::before, .divider-row::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .switch-line{ text-align:center; font-size:13.5px; color: var(--slate); margin-top:18px; }
+  .switch-line button{ background:none; border:none; color: var(--stamp); font-weight:600; padding:0; font-size:13.5px; }
+
+  /* ---------- top bar (post-login screens) ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px;
+    border-bottom:1px solid var(--line);
+    background: var(--card);
+    position:sticky; top:0; z-index:20;
+  }
+  .topbar-brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:600; font-size:19px; color:var(--ink); cursor:pointer; }
+  .topbar-brand .brand-dot{ background: var(--stamp); }
+  .stat-pill{
+    display:flex; align-items:center; gap:6px;
+    font-family:var(--font-mono); font-size:13px; font-weight:600;
+    padding:7px 13px; border-radius:999px; border:1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .topbar-stats{ display:flex; gap:10px; align-items:center; }
+
+  /* ---------- language select ---------- */
+  .content-wrap{ max-width:920px; margin:0 auto; padding:44px 24px 80px; width:100%; }
+  .page-heading{ font-family: var(--font-display); font-size:32px; margin:8px 0 6px; }
+  .page-sub{ color: var(--slate); font-size:15px; margin:0 0 28px; max-width:560px; }
+  .search-field{ position:relative; margin-bottom:22px; }
+  .search-field input{ padding-left:42px; }
+  .search-field svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); }
+  .lang-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap:12px;
+    max-height:56vh;
+    overflow-y:auto;
+    padding:4px 4px 12px 2px;
+  }
+  .lang-card{
+    border:1.5px solid var(--line);
+    background: var(--card);
+    border-radius: var(--radius-m);
+    padding:14px 14px;
+    display:flex; flex-direction:column; gap:6px;
+    text-align:left;
+    transition: border-color .12s ease, transform .1s ease, box-shadow .12s ease;
+  }
+  .lang-card:hover{ border-color: var(--violet); transform:translateY(-2px); }
+  .lang-card.selected{ border-color: var(--stamp); background: rgba(255,79,166,0.12); box-shadow: 0 0 0 1px rgba(255,79,166,0.3), 0 0 24px -8px rgba(255,79,166,0.5); }
+  .lang-flag{ font-size:26px; line-height:1; }
+  .lang-name{ font-weight:600; font-size:14.5px; color:var(--ink); }
+  .lang-native{ font-size:12.5px; color: var(--slate); }
+  .lang-content-tag{
+    font-family: var(--font-mono); font-size:10px; letter-spacing:0.04em; text-transform:uppercase;
+    color: var(--teal); font-weight:600; margin-top:2px;
+  }
+  .lang-content-tag.tag-general{ color: var(--slate-light); }
+  .sticky-footer{
+    position:sticky; bottom:0; background: linear-gradient(180deg, rgba(11,8,24,0), var(--paper) 30%);
+    padding:22px 0 4px;
+    display:flex; justify-content:flex-end;
+  }
+
+  /* ---------- placement ---------- */
+  .placement-card{ max-width:560px; margin:0 auto; padding:48px 40px; text-align:center; }
+  .stamp-icon-lg{
+    width:76px; height:76px; border-radius:50%;
+    border:2px solid var(--stamp); color: var(--stamp);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 22px; font-family:var(--font-display); font-size:30px; font-weight:600;
+    transform: rotate(-8deg);
+  }
+  .choice-row{ display:flex; gap:12px; justify-content:center; margin-top:28px; flex-wrap:wrap; }
+
+  .quiz-progress-track{ height:8px; border-radius:999px; background: var(--paper-2); overflow:hidden; margin-bottom:36px; }
+  .quiz-progress-fill{ height:100%; background: var(--teal); border-radius:999px; transition: width .3s ease; }
+  .quiz-q{ font-family: var(--font-display); font-size:24px; margin:0 0 24px; line-height:1.35; }
+  .option-list{ display:flex; flex-direction:column; gap:10px; }
+  .option-btn{
+    text-align:left; padding:15px 18px; border-radius: var(--radius-s);
+    border:1.5px solid var(--line-strong); background:rgba(36,30,61,0.025); font-size:15px; color:var(--ink);
+    font-weight:500;
+    transition: border-color .12s ease, background .12s ease;
+  }
+  .option-btn:hover{ border-color: var(--violet); background:rgba(139,92,246,0.08); }
+  .option-btn.correct{ border-color: var(--teal); background:rgba(46,230,184,0.14); color: var(--teal); }
+  .option-btn.wrong{ border-color: var(--stamp); background:rgba(255,79,166,0.14); color: var(--stamp); }
+  .option-btn:disabled{ cursor:default; }
+  .quiz-corrector{ margin:14px 0 0; font-size:13.5px; color: var(--stamp); background:rgba(255,79,166,0.1); border:1px solid rgba(255,79,166,0.35); border-radius: var(--radius-s); padding:10px 14px; }
+  .quiz-nav-row{ display:flex; justify-content:space-between; gap:10px; margin-top:22px; }
+  .quiz-nav-row .btn-stamp:disabled{ opacity:.45; cursor:default; }
+  .quiz-nav-row .btn-ghost:disabled{ opacity:.35; cursor:default; }
+
+  /* ---------- dashboard ---------- */
+  .dash-grid{ display:grid; grid-template-columns: 1fr 300px; gap:28px; align-items:start; }
+  .xp-card{ padding:20px 22px; margin-bottom:18px; }
+  .xp-top-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .xp-level{ font-family:var(--font-display); font-size:18px; font-weight:600; }
+  .xp-num{ font-family: var(--font-mono); font-size:13px; color: var(--slate); }
+  .xp-track{ height:10px; border-radius:999px; background: var(--paper-2); overflow:hidden; }
+  .xp-fill{ height:100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); border-radius:999px; transition: width .4s ease; }
+
+  .path-wrap{ display:flex; flex-direction:column; align-items:center; gap:0; padding:20px 0 10px; }
+  .path-count{ text-align:center; font-size:12.5px; color:var(--slate); font-weight:600; letter-spacing:.02em; margin:-4px 0 4px; }
+  .unit-node-row{ display:flex; align-items:center; flex-direction:column; }
+  .unit-node{
+    width:78px; height:78px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-size:15px; font-weight:600;
+    border:2px solid var(--line-strong);
+    background: var(--card); color:var(--slate);
+    position:relative;
+    transition: transform .12s ease, box-shadow .2s ease;
+  }
+  .unit-node:hover{ transform: scale(1.06); }
+  .unit-node.done{ border-color: var(--teal); color: var(--teal); background:rgba(46,230,184,0.14); box-shadow:0 0 18px -4px rgba(46,230,184,0.45); }
+  .unit-node.active{ border-color: var(--stamp); color: var(--stamp); background: var(--card); box-shadow:0 0 0 6px rgba(255,79,166,0.14), 0 0 30px -4px rgba(255,79,166,0.65); animation: nodePulse 2.4s ease-in-out infinite; }
+  @keyframes nodePulse{ 0%,100%{ box-shadow:0 0 0 6px rgba(255,79,166,0.14), 0 0 30px -4px rgba(255,79,166,0.65);} 50%{ box-shadow:0 0 0 9px rgba(255,79,166,0.10), 0 0 42px -2px rgba(255,79,166,0.8);} }
+  .unit-node.locked{ opacity:.4; }
+  .unit-connector{ width:3px; height:34px; background: var(--line-strong); }
+  .unit-label{ font-size:12.5px; color: var(--slate); margin-top:8px; text-align:center; max-width:120px; font-weight:600;}
+
+  .side-card{ padding:18px 20px; margin-bottom:16px; }
+  .side-card h3{ font-family:var(--font-display); font-size:16px; margin:0 0 12px; }
+  .streak-row{ display:flex; align-items:center; gap:12px; }
+  .streak-flame{
+    width:46px; height:46px; border-radius:50%; background:rgba(255,79,166,0.14); color:var(--stamp);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .streak-num{ font-family:var(--font-mono); font-size:22px; font-weight:600; color:var(--ink); }
+  .streak-sub{ font-size:12.5px; color:var(--slate); }
+  .goal-ring-row{ display:flex; align-items:center; gap:14px; }
+  .goal-track{ flex:1; height:8px; border-radius:999px; background:var(--paper-2); overflow:hidden; }
+  .goal-fill{ height:100%; background:var(--teal); border-radius:999px; }
+  .goal-text{ font-family:var(--font-mono); font-size:12.5px; color:var(--slate); white-space:nowrap; }
+
+  /* ---------- lesson ---------- */
+  .lesson-shell{ max-width:640px; margin:0 auto; padding:24px 24px 60px; }
+  .lesson-top{ display:flex; align-items:center; gap:16px; margin-bottom:32px; }
+  .lesson-progress-track{ flex:1; height:10px; border-radius:999px; background: var(--paper-2); overflow:hidden; }
+  .lesson-hearts{ font-size:14px; letter-spacing:1px; white-space:nowrap; }
+  .combo-banner{
+    text-align:center; font-weight:700; font-size:14px; color: var(--stamp);
+    background:rgba(255,79,166,0.14); border:1px solid var(--stamp); border-radius:999px;
+    padding:6px 14px; margin:-14px auto 22px; width:fit-content;
+    box-shadow:0 0 20px -6px rgba(255,79,166,0.6);
+    animation: bounce 1.6s ease-in-out infinite;
+  }
+  .lesson-progress-fill{ height:100%; background: var(--stamp); border-radius:999px; transition:width .3s ease; }
+  .icon-btn{ background:none; border:none; color: var(--slate); display:flex; }
+  .grammar-card{ padding:28px 26px; margin-bottom:24px; }
+  .grammar-card .eyebrow{ margin-bottom:10px; display:block; }
+  .grammar-card h2{ font-family:var(--font-display); font-size:24px; margin:0 0 12px; }
+  .grammar-card p{ font-size:15px; line-height:1.65; color: var(--ink); margin:0 0 10px; }
+  .vocab-line{ display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--line); font-size:14.5px; }
+  .vocab-line:first-of-type{ border-top:none; margin-top:6px; }
+  .vocab-target{ font-weight:600; }
+  .exercise-card{ padding:30px 26px; }
+  .exercise-prompt{ font-family: var(--font-display); font-size:22px; margin:0 0 22px; line-height:1.35; }
+  .type-answer-row{ display:flex; gap:10px; }
+  .type-answer-row input{ flex:1; }
+  .speak-row{ display:flex; flex-direction:column; align-items:center; gap:14px; padding:10px 0 6px; text-align:center; }
+  .mic-btn{
+    width:76px; height:76px; border-radius:50%; border:none; cursor:pointer;
+    background: linear-gradient(180deg, var(--violet), var(--violet-dark));
+    color:#fff; font-size:30px; display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 10px 24px -8px rgba(139,92,246,0.55);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    touch-action: none; user-select: none;
+  }
+  .mic-btn:hover{ transform: translateY(-1px); }
+  .mic-btn:disabled{ opacity:0.6; cursor:default; transform:none; }
+  .mic-btn.recording{
+    background: linear-gradient(180deg, var(--stamp), var(--stamp-dark));
+    box-shadow: 0 0 0 8px rgba(255,79,166,0.16), 0 10px 24px -8px rgba(255,79,166,0.55);
+    animation: micPulse 1.1s ease-in-out infinite;
+  }
+  @keyframes micPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+  .speak-status{ font-size:13.5px; color: var(--slate); max-width:340px; }
+  .speak-transcript{ font-size:14.5px; font-weight:600; color: var(--ink); min-height:20px; }
+  .feedback-bar{
+    position:fixed; bottom:0; left:0; right:0; padding:20px 24px; z-index:30;
+    display:flex; align-items:center; justify-content:space-between;
+    animation: slideup .25s ease;
+  }
+  @keyframes slideup{ from{ transform:translateY(100%);} to{ transform:translateY(0);} }
+  .feedback-bar.correct{ background:#E3F9F1; border-top:1.5px solid var(--teal); }
+  .feedback-bar.wrong{ background:#FFEAF3; border-top:1.5px solid var(--stamp); }
+  .feedback-text{ display:flex; align-items:center; gap:12px; font-weight:600; font-size:16px; }
+  .feedback-bar.correct .feedback-text{ color: var(--teal); }
+  .feedback-bar.wrong .feedback-text{ color: var(--stamp); }
+  .feedback-sub{ font-size:13px; font-weight:400; color: var(--slate); display:block; }
+
+  /* ---------- unit complete ---------- */
+  .complete-wrap{ text-align:center; max-width:460px; margin:80px auto; padding:0 20px; }
+  .complete-stamp{
+    width:120px; height:120px; border-radius:50%; border:3px solid var(--stamp); color:var(--stamp);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 26px;
+    transform: rotate(-6deg);
+    font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;
+    text-align:center; line-height:1.3;
+    box-shadow: 0 0 44px -4px rgba(255,79,166,0.6);
+  }
+  .complete-title{ font-family:var(--font-display); font-size:30px; margin:0 0 8px; }
+  .perfect-banner{ font-family:var(--font-mono); font-size:12.5px; font-weight:700; letter-spacing:.04em; color:var(--stamp); background:rgba(255,79,166,0.14); border:1px solid var(--stamp); border-radius:999px; padding:6px 16px; display:inline-block; margin-bottom:14px; animation: perfectPop .5s ease; }
+  @keyframes perfectPop{ 0%{ transform:scale(.7); opacity:0; } 60%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); } }
+  .reward-row{ display:flex; justify-content:center; gap:28px; margin:26px 0 34px; }
+  .reward-item{ text-align:center; }
+  .reward-num{ font-family:var(--font-mono); font-size:24px; font-weight:600; color:var(--ink); }
+  .reward-label{ font-size:12px; color:var(--slate); text-transform:uppercase; letter-spacing:0.06em; margin-top:2px;}
+
+  /* ---------- assistant ---------- */
+  .assistant-fab{
+    position:fixed; bottom:26px; right:26px; z-index:50;
+    width:56px; height:56px; border-radius:50%;
+    background: linear-gradient(135deg, var(--violet), var(--stamp)); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    border:none; box-shadow: 0 12px 30px -8px rgba(139,92,246,0.7);
+    transition: transform .15s ease;
+  }
+  .assistant-fab:hover{ transform: scale(1.06); }
+  .assistant-bubble{
+    position:fixed; bottom:94px; right:26px; z-index:50;
+    width:328px; height:440px;
+    display:flex; flex-direction:column;
+    padding:0;
+    animation: popin .18s ease;
+    overflow:hidden;
+  }
+  @keyframes popin{ from{opacity:0; transform:translateY(6px) scale(.98);} to{opacity:1; transform:translateY(0) scale(1);} }
+  .assistant-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .assistant-name{ display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; color: var(--stamp); font-weight:700; }
+  .assistant-close-x{
+    background:none; border:none; color:var(--slate); font-size:18px; line-height:1; padding:2px 4px; border-radius:6px;
+  }
+  .assistant-close-x:hover{ background:var(--paper-2); color:var(--ink); }
+  .assistant-thread{
+    flex:1; overflow-y:auto; padding:14px 16px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .assistant-text{ font-size:14px; line-height:1.55; color: var(--ink); margin:0; }
+  .msg-row{ display:flex; }
+  .msg-row.from-user{ justify-content:flex-end; }
+  .msg-row.from-fox{ justify-content:flex-start; gap:8px; align-items:flex-start; }
+  .msg-bubble{
+    max-width:82%;
+    padding:9px 13px;
+    border-radius: 14px;
+    font-size:13.5px;
+    line-height:1.5;
+  }
+  .msg-row.from-fox .msg-bubble{ background: var(--fox-cream); color: var(--ink); border-bottom-left-radius:4px; }
+  .msg-row.from-user .msg-bubble{ background: linear-gradient(135deg, var(--violet), var(--stamp)); color:#fff; border-bottom-right-radius:4px; }
+  .msg-typing{ display:inline-flex; gap:3px; padding:11px 13px; }
+  .msg-typing span{ width:5px; height:5px; border-radius:50%; background:var(--fox-dark); opacity:.5; animation: typingDot 1.1s infinite; }
+  .msg-typing span:nth-child(2){ animation-delay:.15s; }
+  .msg-typing span:nth-child(3){ animation-delay:.3s; }
+  @keyframes typingDot{ 0%,60%,100%{ opacity:.3; transform:translateY(0);} 30%{ opacity:1; transform:translateY(-2px);} }
+  .assistant-quick-row{
+    display:flex; gap:8px; padding:0 14px 10px; flex-shrink:0;
+  }
+  .quick-chip{
+    font-size:12px; font-weight:600; color: var(--stamp);
+    background: var(--fox-cream); border:1px solid transparent; border-radius:999px;
+    padding:6px 12px;
+  }
+  .quick-chip:hover{ border-color: var(--stamp); }
+  .assistant-input-row{
+    display:flex; gap:8px; align-items:center;
+    padding:12px 14px; border-top:1px solid var(--line); flex-shrink:0;
+    background: var(--card);
+  }
+  .assistant-input-row input{
+    flex:1; border:1.5px solid var(--line-strong); border-radius:999px;
+    padding:9px 14px; font-size:13.5px; outline:none; background:rgba(36,30,61,0.03); color:var(--ink);
+  }
+  .assistant-input-row input:focus{ border-color: var(--violet); }
+  .assistant-send{
+    width:34px; height:34px; border-radius:50%; border:none; flex-shrink:0;
+    background: var(--stamp); color:#fff; display:flex; align-items:center; justify-content:center;
+  }
+  .assistant-send:disabled{ background:#E4E0F1; }
+  .assistant-row{ display:flex; justify-content:flex-end; }
+
+  /* ---------- mascot & fun bits ---------- */
+  .mascot{ display:inline-flex; }
+  .mascot-bounce{ animation: bounce 2.6s ease-in-out infinite; }
+  @keyframes bounce{ 0%,100%{ transform:translateY(0) rotate(0deg);} 50%{ transform:translateY(-6px) rotate(-3deg);} }
+  .mascot-wiggle:hover{ animation: wiggle .5s ease; }
+  @keyframes wiggle{ 0%,100%{transform:rotate(0deg);} 25%{transform:rotate(-6deg);} 75%{transform:rotate(6deg);} }
+  .login-mascot-wrap{ position:relative; display:flex; justify-content:center; margin:18px 0 6px; }
+  .login-mascot-wrap .speech{
+    position:absolute; top:-14px; right:calc(50% - 132px);
+    background:var(--fox-cream); color:var(--fox-dark); font-family:var(--font-mono); font-weight:600;
+    font-size:12px; padding:7px 12px; border-radius:14px; transform:rotate(-4deg);
+  }
+  .login-mascot-wrap .speech::after{ content:''; position:absolute; bottom:-6px; left:20px; width:10px; height:10px; background:var(--fox-cream); transform:rotate(45deg); }
+
+  .badge-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .badge-item{ text-align:center; padding:12px 6px; border-radius:var(--radius-s); background: var(--paper-2); border:1px solid var(--line); }
+  .badge-item.locked{ opacity:.35; }
+  .badge-emoji{ font-size:24px; display:block; margin-bottom:4px; }
+  .badge-title{ font-size:11px; font-weight:600; color:var(--ink); line-height:1.2; }
+
+  .confetti-piece{
+    position:fixed; top:-10px; width:9px; height:14px; z-index:60; pointer-events:none;
+    animation-name: confetti-fall; animation-timing-function: linear; animation-fill-mode: forwards;
+    border-radius:2px;
+  }
+  @keyframes confetti-fall{
+    0%{ transform: translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform: translateY(100vh) rotate(540deg); opacity:0.9; }
+  }
+
+  .badge-toast{
+    position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:70;
+    background: linear-gradient(135deg, var(--violet), var(--stamp)); color:#fff; padding:14px 20px; border-radius:999px;
+    display:flex; align-items:center; gap:10px; box-shadow:0 12px 30px -8px rgba(139,92,246,0.7);
+    animation: toastdrop .3s ease;
+    font-weight:600; font-size:14px;
+  }
+  @keyframes toastdrop{ from{opacity:0; transform:translate(-50%,-14px);} to{opacity:1; transform:translate(-50%,0);} }
+
+  @media (max-width: 760px){
+    .login-wrap{ grid-template-columns: 1fr; }
+    .login-art{ display:none; }
+    .dash-grid{ grid-template-columns: 1fr; }
+    .topbar{ padding:14px 16px; flex-wrap:wrap; gap:10px; }
+    .content-wrap{ padding:28px 16px 70px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ================= DATA ================= */
+
+const LANGUAGES = [
+["Spanish","Español","🇪🇸","es"],["French","Français","🇫🇷","fr"],["Japanese","日本語","🇯🇵","ja"],
+["German","Deutsch","🇩🇪","de"],["Italian","Italiano","🇮🇹","it"],["Portuguese","Português","🇵🇹","pt"],
+["Mandarin Chinese","中文","🇨🇳","zh"],["Korean","한국어","🇰🇷","ko"],["Arabic","العربية","🇸🇦","ar"],
+["Hindi","हिन्दी","🇮🇳","hi"],["Russian","Русский","🇷🇺","ru"],["Swahili","Kiswahili","🇰🇪","sw"],
+["Dutch","Nederlands","🇳🇱","nl"],["Greek","Ελληνικά","🇬🇷","el"],["Turkish","Türkçe","🇹🇷","tr"],
+["Polish","Polski","🇵🇱","pl"],["Swedish","Svenska","🇸🇪","sv"],["Norwegian","Norsk","🇳🇴","no"],
+["Danish","Dansk","🇩🇰","da"],["Finnish","Suomi","🇫🇮","fi"],["Vietnamese","Tiếng Việt","🇻🇳","vi"],
+["Thai","ไทย","🇹🇭","th"],["Indonesian","Bahasa Indonesia","🇮🇩","id"],["Malay","Bahasa Melayu","🇲🇾","ms"],
+["Filipino","Filipino","🇵🇭","tl"],["Hebrew","עברית","🇮🇱","he"],["Persian (Farsi)","فارسی","🇮🇷","fa"],
+["Ukrainian","Українська","🇺🇦","uk"],["Czech","Čeština","🇨🇿","cs"],["Hungarian","Magyar","🇭🇺","hu"],
+["Romanian","Română","🇷🇴","ro"],["Bulgarian","Български","🇧🇬","bg"],["Croatian","Hrvatski","🇭🇷","hr"],
+["Serbian","Српски","🇷🇸","sr"],["Slovak","Slovenčina","🇸🇰","sk"],["Ukrainian Sign","—","🤟","usl"],
+["Cantonese","廣東話","🇭🇰","yue"],["Bengali","বাংলা","🇧🇩","bn"],["Urdu","اردو","🇵🇰","ur"],
+["Tamil","தமிழ்","🇱🇰","ta"],["Telugu","తెలుగు","🇮🇳","te"],["Marathi","मराठी","🇮🇳","mr"],
+["Gujarati","ગુજરાતી","🇮🇳","gu"],["Punjabi","ਪੰਜਾਬੀ","🇮🇳","pa"],["Kannada","ಕನ್ನಡ","🇮🇳","kn"],
+["Malayalam","മലയാളം","🇮🇳","ml"],["Nepali","नेपाली","🇳🇵","ne"],["Sinhala","සිංහල","🇱🇰","si"],
+["Burmese","မြန်မာဘာသာ","🇲🇲","my"],["Khmer","ភាសាខ្មែរ","🇰🇭","km"],["Lao","ພາສາລາວ","🇱🇦","lo"],
+["Mongolian","Монгол","🇲🇳","mn"],["Amharic","አማርኛ","🇪🇹","am"],["Somali","Soomaali","🇸🇴","so"],
+["Zulu","isiZulu","🇿🇦","zu"],["Xhosa","isiXhosa","🇿🇦","xh"],["Afrikaans","Afrikaans","🇿🇦","af"],
+["Yoruba","Yorùbá","🇳🇬","yo"],["Igbo","Igbo","🇳🇬","ig"],["Hausa","Hausa","🇳🇬","ha"],
+["Icelandic","Íslenska","🇮🇸","is"],["Irish","Gaeilge","🇮🇪","ga"],["Welsh","Cymraeg","🏴","cy"],
+["Scottish Gaelic","Gàidhlig","🏴","gd"],["Catalan","Català","🎗️","ca"],["Basque","Euskara","🎗️","eu"],
+["Galician","Galego","🎗️","gl"],["Estonian","Eesti","🇪🇪","et"],["Latvian","Latviešu","🇱🇻","lv"],
+["Lithuanian","Lietuvių","🇱🇹","lt"],["Albanian","Shqip","🇦🇱","sq"],["Macedonian","Македонски","🇲🇰","mk"],
+["Slovenian","Slovenščina","🇸🇮","sl"],["Bosnian","Bosanski","🇧🇦","bs"],["Georgian","ქართული","🇬🇪","ka"],
+["Armenian","Հայերեն","🇦🇲","hy"],["Azerbaijani","Azərbaycan","🇦🇿","az"],["Kazakh","Қазақ","🇰🇿","kk"],
+["Uzbek","O'zbek","🇺🇿","uz"],["Pashto","پښتو","🇦🇫","ps"],["Kurdish","Kurdî","🏳️","ku"],
+["Tibetan","བོད་སྐད་","🏔️","bo"],["Maori","Māori","🇳🇿","mi"],["Samoan","Gagana Sāmoa","🇼🇸","sm"],
+["Tongan","Lea Fakatonga","🇹🇴","to"],["Hawaiian","ʻŌlelo Hawaiʻi","🌺","haw"],["Fijian","Vosa Vakaviti","🇫🇯","fj"],
+["Haitian Creole","Kreyòl Ayisyen","🇭🇹","ht"],["Quechua","Runasimi","🏔️","qu"],["Guarani","Avañeʼẽ","🇵🇾","gn"],
+["Nahuatl","Nāhuatl","🌵","nah"],["Yiddish","ייִדיש","✡️","yi"],["Esperanto","Esperanto","🌍","eo"],
+["Latin","Latina","🏛️","la"],["Ancient Greek","Ἑλληνική","🏛️","grc"],["Maltese","Malti","🇲🇹","mt"],
+["Luxembourgish","Lëtzebuergesch","🇱🇺","lb"],["Corsican","Corsu","🏝️","co"],["Breton","Brezhoneg","🏳️","br"],
+["Frisian","Frysk","🇳🇱","fy"],["Sardinian","Sardu","🏝️","sc"],["Tatar","Татар","🏳️","tt"],
+["Chechen","Нохчийн","🏳️","ce"],["Belarusian","Беларуская","🇧🇾","be"],["Wolof","Wolof","🇸🇳","wo"],
+["Shona","chiShona","🇿🇼","sn"],["Sesotho","Sesotho","🇱🇸","st"],["Malagasy","Malagasy","🇲🇬","mg"],
+["Tigrinya","ትግርኛ","🇪🇷","ti"],["Chichewa","Chichewa","🇲🇼","ny"],["Papiamento","Papiamentu","🏝️","pap"],
+["Cherokee","ᏣᎳᎩ","🪶","chr"],["Navajo","Diné bizaad","🪶","nv"],["Inuktitut","ᐃᓄᒃᑎᑐᑦ","❄️","iu"]
+];
+
+const CATEGORY_TITLES = ["Greetings & Courtesy","Small Talk","Numbers","Family","Friends & Family","Colors","Days of the Week","Talking About Time","Food & Drink","Basic Verbs","Question Words","The Body","Clothing","Weather","Animals","Around the House","Everyday Adjectives"];
+const CATEGORY_NOTES = ["Every language starts with greetings — short, high-frequency words you'll hear constantly.","Small talk phrases let you keep a basic conversation moving.","Numbers are essential for prices, ages, and everyday counting. Keep building your numbers so you can count higher and tell time.","Family words are some of the most-used nouns in any language.","You'll reach for these constantly once you start making small talk.","Colors are handy descriptive words used everywhere, from clothes to objects. A few more colors round out your descriptive vocabulary.","Days of the week help you make plans and talk about schedules.","These time words let you say when things happen.","A few everyday nouns go a long way when ordering food. More food vocabulary for markets, menus, and kitchens.","These short phrases are the building blocks of full sentences.","Question words are the key to asking for anything you need.","Body vocabulary is useful for describing feelings and health.","Clothing words come up while shopping or describing what someone's wearing.","Talking about weather is one of the most common icebreakers.","Animal names are common in conversation, media, and children's books.","Words for rooms and parts of a home are useful when describing where you live.","These common adjectives describe size and quality in everyday speech."];
+const LANG_DATA = {
+  es: [
+    [["Hello","Hola"],["Goodbye","Adiós"],["Please","Por favor"],["Thank you","Gracias"]],
+    [["Yes","Sí"],["No","No"],["How are you?","¿Cómo estás?"],["I'm fine","Estoy bien"]],
+    [["One","Uno"],["Two","Dos"],["Three","Tres"],["Four","Cuatro"],["Five","Cinco"],["Six","Seis"],["Seven","Siete"],["Eight","Ocho"]],
+    [["Mother","Madre"],["Father","Padre"],["Sister","Hermana"],["Brother","Hermano"]],
+    [["Friend","Amigo"],["Family","Familia"],["Son","Hijo"],["Daughter","Hija"]],
+    [["Red","Rojo"],["Blue","Azul"],["Green","Verde"],["Yellow","Amarillo"],["Black","Negro"],["White","Blanco"],["Orange","Naranja"],["Purple","Morado"]],
+    [["Monday","Lunes"],["Tuesday","Martes"],["Friday","Viernes"],["Sunday","Domingo"]],
+    [["Today","Hoy"],["Tomorrow","Mañana"],["Yesterday","Ayer"],["Now","Ahora"]],
+    [["Water","Agua"],["Bread","Pan"],["Rice","Arroz"],["Meat","Carne"],["Fruit","Fruta"],["Vegetable","Verdura"],["Milk","Leche"],["Egg","Huevo"]],
+    [["I am","Yo soy"],["You are","Tú eres"],["I have","Yo tengo"],["I want","Yo quiero"]],
+    [["What","Qué"],["Where","Dónde"],["When","Cuándo"],["Why","Por qué"]],
+    [["Head","Cabeza"],["Hand","Mano"],["Eye","Ojo"],["Heart","Corazón"]],
+    [["Shirt","Camisa"],["Shoes","Zapatos"],["Hat","Sombrero"],["Dress","Vestido"]],
+    [["Sun","Sol"],["Rain","Lluvia"],["Wind","Viento"],["Snow","Nieve"]],
+    [["Dog","Perro"],["Cat","Gato"],["Bird","Pájaro"],["Fish","Pez"]],
+    [["House","Casa"],["Door","Puerta"],["Window","Ventana"],["Room","Habitación"]],
+    [["Big","Grande"],["Small","Pequeño"],["Good","Bueno"],["Bad","Malo"]]
+  ],
+  fr: [
+    [["Hello","Bonjour"],["Goodbye","Au revoir"],["Please","S'il vous plaît"],["Thank you","Merci"]],
+    [["Yes","Oui"],["No","Non"],["How are you?","Comment ça va ?"],["I'm fine","Je vais bien"]],
+    [["One","Un"],["Two","Deux"],["Three","Trois"],["Four","Quatre"],["Five","Cinq"],["Six","Six"],["Seven","Sept"],["Eight","Huit"]],
+    [["Mother","Mère"],["Father","Père"],["Sister","Sœur"],["Brother","Frère"]],
+    [["Friend","Ami"],["Family","Famille"],["Son","Fils"],["Daughter","Fille"]],
+    [["Red","Rouge"],["Blue","Bleu"],["Green","Vert"],["Yellow","Jaune"],["Black","Noir"],["White","Blanc"],["Orange","Orange"],["Purple","Violet"]],
+    [["Monday","Lundi"],["Tuesday","Mardi"],["Friday","Vendredi"],["Sunday","Dimanche"]],
+    [["Today","Aujourd'hui"],["Tomorrow","Demain"],["Yesterday","Hier"],["Now","Maintenant"]],
+    [["Water","Eau"],["Bread","Pain"],["Rice","Riz"],["Meat","Viande"],["Fruit","Fruit"],["Vegetable","Légume"],["Milk","Lait"],["Egg","Œuf"]],
+    [["I am","Je suis"],["You are","Tu es"],["I have","J'ai"],["I want","Je veux"]],
+    [["What","Quoi"],["Where","Où"],["When","Quand"],["Why","Pourquoi"]],
+    [["Head","Tête"],["Hand","Main"],["Eye","Œil"],["Heart","Cœur"]],
+    [["Shirt","Chemise"],["Shoes","Chaussures"],["Hat","Chapeau"],["Dress","Robe"]],
+    [["Sun","Soleil"],["Rain","Pluie"],["Wind","Vent"],["Snow","Neige"]],
+    [["Dog","Chien"],["Cat","Chat"],["Bird","Oiseau"],["Fish","Poisson"]],
+    [["House","Maison"],["Door","Porte"],["Window","Fenêtre"],["Room","Chambre"]],
+    [["Big","Grand"],["Small","Petit"],["Good","Bon"],["Bad","Mauvais"]]
+  ],
+  ja: [
+    [["Hello","こんにちは"],["Goodbye","さようなら"],["Please","お願いします"],["Thank you","ありがとう"]],
+    [["Yes","はい"],["No","いいえ"],["How are you?","お元気ですか？"],["I'm fine","元気です"]],
+    [["One","一"],["Two","二"],["Three","三"],["Four","四"],["Five","五"],["Six","六"],["Seven","七"],["Eight","八"]],
+    [["Mother","お母さん"],["Father","お父さん"],["Sister","姉"],["Brother","兄"]],
+    [["Friend","友達"],["Family","家族"],["Son","息子"],["Daughter","娘"]],
+    [["Red","赤"],["Blue","青"],["Green","緑"],["Yellow","黄色"],["Black","黒"],["White","白"],["Orange","オレンジ"],["Purple","紫"]],
+    [["Monday","月曜日"],["Tuesday","火曜日"],["Friday","金曜日"],["Sunday","日曜日"]],
+    [["Today","今日"],["Tomorrow","明日"],["Yesterday","昨日"],["Now","今"]],
+    [["Water","水"],["Bread","パン"],["Rice","ご飯"],["Meat","肉"],["Fruit","果物"],["Vegetable","野菜"],["Milk","牛乳"],["Egg","卵"]],
+    [["I am","私は…です"],["You are","あなたは…です"],["I have","持っています"],["I want","欲しいです"]],
+    [["What","何"],["Where","どこ"],["When","いつ"],["Why","なぜ"]],
+    [["Head","頭"],["Hand","手"],["Eye","目"],["Heart","心"]],
+    [["Shirt","シャツ"],["Shoes","靴"],["Hat","帽子"],["Dress","ドレス"]],
+    [["Sun","太陽"],["Rain","雨"],["Wind","風"],["Snow","雪"]],
+    [["Dog","犬"],["Cat","猫"],["Bird","鳥"],["Fish","魚"]],
+    [["House","家"],["Door","ドア"],["Window","窓"],["Room","部屋"]],
+    [["Big","大きい"],["Small","小さい"],["Good","良い"],["Bad","悪い"]]
+  ],
+  de: [
+    [["Hello","Hallo"],["Goodbye","Tschüss"],["Please","Bitte"],["Thank you","Danke"]],
+    [["Yes","Ja"],["No","Nein"],["How are you?","Wie geht's?"],["I'm fine","Mir geht es gut"]],
+    [["One","Eins"],["Two","Zwei"],["Three","Drei"],["Four","Vier"],["Five","Fünf"],["Six","Sechs"],["Seven","Sieben"],["Eight","Acht"]],
+    [["Mother","Mutter"],["Father","Vater"],["Sister","Schwester"],["Brother","Bruder"]],
+    [["Friend","Freund"],["Family","Familie"],["Son","Sohn"],["Daughter","Tochter"]],
+    [["Red","Rot"],["Blue","Blau"],["Green","Grün"],["Yellow","Gelb"],["Black","Schwarz"],["White","Weiß"],["Orange","Orange"],["Purple","Lila"]],
+    [["Monday","Montag"],["Tuesday","Dienstag"],["Friday","Freitag"],["Sunday","Sonntag"]],
+    [["Today","Heute"],["Tomorrow","Morgen"],["Yesterday","Gestern"],["Now","Jetzt"]],
+    [["Water","Wasser"],["Bread","Brot"],["Rice","Reis"],["Meat","Fleisch"],["Fruit","Obst"],["Vegetable","Gemüse"],["Milk","Milch"],["Egg","Ei"]],
+    [["I am","Ich bin"],["You are","Du bist"],["I have","Ich habe"],["I want","Ich will"]],
+    [["What","Was"],["Where","Wo"],["When","Wann"],["Why","Warum"]],
+    [["Head","Kopf"],["Hand","Hand"],["Eye","Auge"],["Heart","Herz"]],
+    [["Shirt","Hemd"],["Shoes","Schuhe"],["Hat","Hut"],["Dress","Kleid"]],
+    [["Sun","Sonne"],["Rain","Regen"],["Wind","Wind"],["Snow","Schnee"]],
+    [["Dog","Hund"],["Cat","Katze"],["Bird","Vogel"],["Fish","Fisch"]],
+    [["House","Haus"],["Door","Tür"],["Window","Fenster"],["Room","Zimmer"]],
+    [["Big","Groß"],["Small","Klein"],["Good","Gut"],["Bad","Schlecht"]]
+  ],
+  it: [
+    [["Hello","Ciao"],["Goodbye","Arrivederci"],["Please","Per favore"],["Thank you","Grazie"]],
+    [["Yes","Sì"],["No","No"],["How are you?","Come stai?"],["I'm fine","Sto bene"]],
+    [["One","Uno"],["Two","Due"],["Three","Tre"],["Four","Quattro"],["Five","Cinque"],["Six","Sei"],["Seven","Sette"],["Eight","Otto"]],
+    [["Mother","Madre"],["Father","Padre"],["Sister","Sorella"],["Brother","Fratello"]],
+    [["Friend","Amico"],["Family","Famiglia"],["Son","Figlio"],["Daughter","Figlia"]],
+    [["Red","Rosso"],["Blue","Blu"],["Green","Verde"],["Yellow","Giallo"],["Black","Nero"],["White","Bianco"],["Orange","Arancione"],["Purple","Viola"]],
+    [["Monday","Lunedì"],["Tuesday","Martedì"],["Friday","Venerdì"],["Sunday","Domenica"]],
+    [["Today","Oggi"],["Tomorrow","Domani"],["Yesterday","Ieri"],["Now","Adesso"]],
+    [["Water","Acqua"],["Bread","Pane"],["Rice","Riso"],["Meat","Carne"],["Fruit","Frutta"],["Vegetable","Verdura"],["Milk","Latte"],["Egg","Uovo"]],
+    [["I am","Io sono"],["You are","Tu sei"],["I have","Io ho"],["I want","Io voglio"]],
+    [["What","Cosa"],["Where","Dove"],["When","Quando"],["Why","Perché"]],
+    [["Head","Testa"],["Hand","Mano"],["Eye","Occhio"],["Heart","Cuore"]],
+    [["Shirt","Camicia"],["Shoes","Scarpe"],["Hat","Cappello"],["Dress","Vestito"]],
+    [["Sun","Sole"],["Rain","Pioggia"],["Wind","Vento"],["Snow","Neve"]],
+    [["Dog","Cane"],["Cat","Gatto"],["Bird","Uccello"],["Fish","Pesce"]],
+    [["House","Casa"],["Door","Porta"],["Window","Finestra"],["Room","Stanza"]],
+    [["Big","Grande"],["Small","Piccolo"],["Good","Buono"],["Bad","Cattivo"]]
+  ],
+  pt: [
+    [["Hello","Olá"],["Goodbye","Tchau"],["Please","Por favor"],["Thank you","Obrigado"]],
+    [["Yes","Sim"],["No","Não"],["How are you?","Como você está?"],["I'm fine","Estou bem"]],
+    [["One","Um"],["Two","Dois"],["Three","Três"],["Four","Quatro"],["Five","Cinco"],["Six","Seis"],["Seven","Sete"],["Eight","Oito"]],
+    [["Mother","Mãe"],["Father","Pai"],["Sister","Irmã"],["Brother","Irmão"]],
+    [["Friend","Amigo"],["Family","Família"],["Son","Filho"],["Daughter","Filha"]],
+    [["Red","Vermelho"],["Blue","Azul"],["Green","Verde"],["Yellow","Amarelo"],["Black","Preto"],["White","Branco"],["Orange","Laranja"],["Purple","Roxo"]],
+    [["Monday","Segunda-feira"],["Tuesday","Terça-feira"],["Friday","Sexta-feira"],["Sunday","Domingo"]],
+    [["Today","Hoje"],["Tomorrow","Amanhã"],["Yesterday","Ontem"],["Now","Agora"]],
+    [["Water","Água"],["Bread","Pão"],["Rice","Arroz"],["Meat","Carne"],["Fruit","Fruta"],["Vegetable","Legume"],["Milk","Leite"],["Egg","Ovo"]],
+    [["I am","Eu sou"],["You are","Você é"],["I have","Eu tenho"],["I want","Eu quero"]],
+    [["What","O que"],["Where","Onde"],["When","Quando"],["Why","Por que"]],
+    [["Head","Cabeça"],["Hand","Mão"],["Eye","Olho"],["Heart","Coração"]],
+    [["Shirt","Camisa"],["Shoes","Sapatos"],["Hat","Chapéu"],["Dress","Vestido"]],
+    [["Sun","Sol"],["Rain","Chuva"],["Wind","Vento"],["Snow","Neve"]],
+    [["Dog","Cachorro"],["Cat","Gato"],["Bird","Pássaro"],["Fish","Peixe"]],
+    [["House","Casa"],["Door","Porta"],["Window","Janela"],["Room","Quarto"]],
+    [["Big","Grande"],["Small","Pequeno"],["Good","Bom"],["Bad","Ruim"]]
+  ],
+  zh: [
+    [["Hello","你好"],["Goodbye","再见"],["Please","请"],["Thank you","谢谢"]],
+    [["Yes","是"],["No","不是"],["How are you?","你好吗？"],["I'm fine","我很好"]],
+    [["One","一"],["Two","二"],["Three","三"],["Four","四"],["Five","五"],["Six","六"],["Seven","七"],["Eight","八"]],
+    [["Mother","妈妈"],["Father","爸爸"],["Sister","姐姐"],["Brother","哥哥"]],
+    [["Friend","朋友"],["Family","家庭"],["Son","儿子"],["Daughter","女儿"]],
+    [["Red","红色"],["Blue","蓝色"],["Green","绿色"],["Yellow","黄色"],["Black","黑色"],["White","白色"],["Orange","橙色"],["Purple","紫色"]],
+    [["Monday","星期一"],["Tuesday","星期二"],["Friday","星期五"],["Sunday","星期日"]],
+    [["Today","今天"],["Tomorrow","明天"],["Yesterday","昨天"],["Now","现在"]],
+    [["Water","水"],["Bread","面包"],["Rice","米饭"],["Meat","肉"],["Fruit","水果"],["Vegetable","蔬菜"],["Milk","牛奶"],["Egg","鸡蛋"]],
+    [["I am","我是"],["You are","你是"],["I have","我有"],["I want","我想要"]],
+    [["What","什么"],["Where","哪里"],["When","什么时候"],["Why","为什么"]],
+    [["Head","头"],["Hand","手"],["Eye","眼睛"],["Heart","心"]],
+    [["Shirt","衬衫"],["Shoes","鞋子"],["Hat","帽子"],["Dress","连衣裙"]],
+    [["Sun","太阳"],["Rain","雨"],["Wind","风"],["Snow","雪"]],
+    [["Dog","狗"],["Cat","猫"],["Bird","鸟"],["Fish","鱼"]],
+    [["House","房子"],["Door","门"],["Window","窗户"],["Room","房间"]],
+    [["Big","大"],["Small","小"],["Good","好"],["Bad","坏"]]
+  ],
+  ko: [
+    [["Hello","안녕하세요"],["Goodbye","안녕히 가세요"],["Please","제발"],["Thank you","감사합니다"]],
+    [["Yes","네"],["No","아니요"],["How are you?","어떻게 지내세요?"],["I'm fine","저는 잘 지내요"]],
+    [["One","하나"],["Two","둘"],["Three","셋"],["Four","넷"],["Five","다섯"],["Six","여섯"],["Seven","일곱"],["Eight","여덟"]],
+    [["Mother","어머니"],["Father","아버지"],["Sister","여동생"],["Brother","남동생"]],
+    [["Friend","친구"],["Family","가족"],["Son","아들"],["Daughter","딸"]],
+    [["Red","빨간색"],["Blue","파란색"],["Green","초록색"],["Yellow","노란색"],["Black","검은색"],["White","흰색"],["Orange","주황색"],["Purple","보라색"]],
+    [["Monday","월요일"],["Tuesday","화요일"],["Friday","금요일"],["Sunday","일요일"]],
+    [["Today","오늘"],["Tomorrow","내일"],["Yesterday","어제"],["Now","지금"]],
+    [["Water","물"],["Bread","빵"],["Rice","쌀"],["Meat","고기"],["Fruit","과일"],["Vegetable","채소"],["Milk","우유"],["Egg","계란"]],
+    [["I am","저예요"],["You are","당신이에요"],["I have","저는 있어요"],["I want","저는 원해요"]],
+    [["What","무엇"],["Where","어디"],["When","언제"],["Why","왜"]],
+    [["Head","머리"],["Hand","손"],["Eye","눈"],["Heart","심장"]],
+    [["Shirt","셔츠"],["Shoes","신발"],["Hat","모자"],["Dress","원피스"]],
+    [["Sun","태양"],["Rain","비"],["Wind","바람"],["Snow","눈"]],
+    [["Dog","개"],["Cat","고양이"],["Bird","새"],["Fish","물고기"]],
+    [["House","집"],["Door","문"],["Window","창문"],["Room","방"]],
+    [["Big","큰"],["Small","작은"],["Good","좋은"],["Bad","나쁜"]]
+  ],
+  ar: [
+    [["Hello","مرحبا"],["Goodbye","مع السلامة"],["Please","من فضلك"],["Thank you","شكرا"]],
+    [["Yes","نعم"],["No","لا"],["How are you?","كيف حالك؟"],["I'm fine","أنا بخير"]],
+    [["One","واحد"],["Two","اثنان"],["Three","ثلاثة"],["Four","أربعة"],["Five","خمسة"],["Six","ستة"],["Seven","سبعة"],["Eight","ثمانية"]],
+    [["Mother","أم"],["Father","أب"],["Sister","أخت"],["Brother","أخ"]],
+    [["Friend","صديق"],["Family","عائلة"],["Son","ابن"],["Daughter","ابنة"]],
+    [["Red","أحمر"],["Blue","أزرق"],["Green","أخضر"],["Yellow","أصفر"],["Black","أسود"],["White","أبيض"],["Orange","برتقالي"],["Purple","بنفسجي"]],
+    [["Monday","الاثنين"],["Tuesday","الثلاثاء"],["Friday","الجمعة"],["Sunday","الأحد"]],
+    [["Today","اليوم"],["Tomorrow","غدا"],["Yesterday","أمس"],["Now","الآن"]],
+    [["Water","ماء"],["Bread","خبز"],["Rice","أرز"],["Meat","لحم"],["Fruit","فاكهة"],["Vegetable","خضار"],["Milk","حليب"],["Egg","بيضة"]],
+    [["I am","أنا"],["You are","أنت"],["I have","عندي"],["I want","أريد"]],
+    [["What","ماذا"],["Where","أين"],["When","متى"],["Why","لماذا"]],
+    [["Head","رأس"],["Hand","يد"],["Eye","عين"],["Heart","قلب"]],
+    [["Shirt","قميص"],["Shoes","حذاء"],["Hat","قبعة"],["Dress","فستان"]],
+    [["Sun","شمس"],["Rain","مطر"],["Wind","رياح"],["Snow","ثلج"]],
+    [["Dog","كلب"],["Cat","قطة"],["Bird","طائر"],["Fish","سمك"]],
+    [["House","بيت"],["Door","باب"],["Window","نافذة"],["Room","غرفة"]],
+    [["Big","كبير"],["Small","صغير"],["Good","جيد"],["Bad","سيء"]]
+  ],
+  hi: [
+    [["Hello","नमस्ते"],["Goodbye","अलविदा"],["Please","कृपया"],["Thank you","धन्यवाद"]],
+    [["Yes","हाँ"],["No","नहीं"],["How are you?","आप कैसे हैं?"],["I'm fine","मैं ठीक हूँ"]],
+    [["One","एक"],["Two","दो"],["Three","तीन"],["Four","चार"],["Five","पाँच"],["Six","छह"],["Seven","सात"],["Eight","आठ"]],
+    [["Mother","माँ"],["Father","पिता"],["Sister","बहन"],["Brother","भाई"]],
+    [["Friend","दोस्त"],["Family","परिवार"],["Son","बेटा"],["Daughter","बेटी"]],
+    [["Red","लाल"],["Blue","नीला"],["Green","हरा"],["Yellow","पीला"],["Black","काला"],["White","सफ़ेद"],["Orange","नारंगी"],["Purple","बैंगनी"]],
+    [["Monday","सोमवार"],["Tuesday","मंगलवार"],["Friday","शुक्रवार"],["Sunday","रविवार"]],
+    [["Today","आज"],["Tomorrow","कल"],["Yesterday","बीता कल"],["Now","अभी"]],
+    [["Water","पानी"],["Bread","रोटी"],["Rice","चावल"],["Meat","मांस"],["Fruit","फल"],["Vegetable","सब्ज़ी"],["Milk","दूध"],["Egg","अंडा"]],
+    [["I am","मैं हूँ"],["You are","तुम हो"],["I have","मेरे पास है"],["I want","मुझे चाहिए"]],
+    [["What","क्या"],["Where","कहाँ"],["When","कब"],["Why","क्यों"]],
+    [["Head","सिर"],["Hand","हाथ"],["Eye","आँख"],["Heart","दिल"]],
+    [["Shirt","कमीज़"],["Shoes","जूते"],["Hat","टोपी"],["Dress","पोशाक"]],
+    [["Sun","सूरज"],["Rain","बारिश"],["Wind","हवा"],["Snow","बर्फ"]],
+    [["Dog","कुत्ता"],["Cat","बिल्ली"],["Bird","पक्षी"],["Fish","मछली"]],
+    [["House","घर"],["Door","दरवाज़ा"],["Window","खिड़की"],["Room","कमरा"]],
+    [["Big","बड़ा"],["Small","छोटा"],["Good","अच्छा"],["Bad","बुरा"]]
+  ],
+  ru: [
+    [["Hello","Привет"],["Goodbye","Пока"],["Please","Пожалуйста"],["Thank you","Спасибо"]],
+    [["Yes","Да"],["No","Нет"],["How are you?","Как дела?"],["I'm fine","У меня всё хорошо"]],
+    [["One","Один"],["Two","Два"],["Three","Три"],["Four","Четыре"],["Five","Пять"],["Six","Шесть"],["Seven","Семь"],["Eight","Восемь"]],
+    [["Mother","Мама"],["Father","Папа"],["Sister","Сестра"],["Brother","Брат"]],
+    [["Friend","Друг"],["Family","Семья"],["Son","Сын"],["Daughter","Дочь"]],
+    [["Red","Красный"],["Blue","Синий"],["Green","Зелёный"],["Yellow","Жёлтый"],["Black","Чёрный"],["White","Белый"],["Orange","Оранжевый"],["Purple","Фиолетовый"]],
+    [["Monday","Понедельник"],["Tuesday","Вторник"],["Friday","Пятница"],["Sunday","Воскресенье"]],
+    [["Today","Сегодня"],["Tomorrow","Завтра"],["Yesterday","Вчера"],["Now","Сейчас"]],
+    [["Water","Вода"],["Bread","Хлеб"],["Rice","Рис"],["Meat","Мясо"],["Fruit","Фрукт"],["Vegetable","Овощ"],["Milk","Молоко"],["Egg","Яйцо"]],
+    [["I am","Я"],["You are","Ты"],["I have","У меня есть"],["I want","Я хочу"]],
+    [["What","Что"],["Where","Где"],["When","Когда"],["Why","Почему"]],
+    [["Head","Голова"],["Hand","Рука"],["Eye","Глаз"],["Heart","Сердце"]],
+    [["Shirt","Рубашка"],["Shoes","Обувь"],["Hat","Шапка"],["Dress","Платье"]],
+    [["Sun","Солнце"],["Rain","Дождь"],["Wind","Ветер"],["Snow","Снег"]],
+    [["Dog","Собака"],["Cat","Кошка"],["Bird","Птица"],["Fish","Рыба"]],
+    [["House","Дом"],["Door","Дверь"],["Window","Окно"],["Room","Комната"]],
+    [["Big","Большой"],["Small","Маленький"],["Good","Хороший"],["Bad","Плохой"]]
+  ],
+  sw: [
+    [["Hello","Habari"],["Goodbye","Kwaheri"],["Please","Tafadhali"],["Thank you","Asante"]],
+    [["Yes","Ndiyo"],["No","Hapana"],["How are you?","Habari yako?"],["I'm fine","Nzuri"]],
+    [["One","Moja"],["Two","Mbili"],["Three","Tatu"],["Four","Nne"],["Five","Tano"],["Six","Sita"],["Seven","Saba"],["Eight","Nane"]],
+    [["Mother","Mama"],["Father","Baba"],["Sister","Dada"],["Brother","Kaka"]],
+    [["Friend","Rafiki"],["Family","Familia"],["Son","Mwana"],["Daughter","Binti"]],
+    [["Red","Nyekundu"],["Blue","Bluu"],["Green","Kijani"],["Yellow","Njano"],["Black","Nyeusi"],["White","Nyeupe"],["Orange","Chungwa"],["Purple","Zambarau"]],
+    [["Monday","Jumatatu"],["Tuesday","Jumanne"],["Friday","Ijumaa"],["Sunday","Jumapili"]],
+    [["Today","Leo"],["Tomorrow","Kesho"],["Yesterday","Jana"],["Now","Sasa"]],
+    [["Water","Maji"],["Bread","Mkate"],["Rice","Mchele"],["Meat","Nyama"],["Fruit","Tunda"],["Vegetable","Mboga"],["Milk","Maziwa"],["Egg","Yai"]],
+    [["I am","Mimi ni"],["You are","Wewe ni"],["I have","Nina"],["I want","Nataka"]],
+    [["What","Nini"],["Where","Wapi"],["When","Lini"],["Why","Kwa nini"]],
+    [["Head","Kichwa"],["Hand","Mkono"],["Eye","Jicho"],["Heart","Moyo"]],
+    [["Shirt","Shati"],["Shoes","Viatu"],["Hat","Kofia"],["Dress","Gauni"]],
+    [["Sun","Jua"],["Rain","Mvua"],["Wind","Upepo"],["Snow","Theluji"]],
+    [["Dog","Mbwa"],["Cat","Paka"],["Bird","Ndege"],["Fish","Samaki"]],
+    [["House","Nyumba"],["Door","Mlango"],["Window","Dirisha"],["Room","Chumba"]],
+    [["Big","Kubwa"],["Small","Ndogo"],["Good","Nzuri"],["Bad","Mbaya"]]
+  ],
+  nl: [
+    [["Hello","Hallo"],["Goodbye","Tot ziens"],["Please","Alsjeblieft"],["Thank you","Dank je"]],
+    [["Yes","Ja"],["No","Nee"],["How are you?","Hoe gaat het?"],["I'm fine","Het gaat goed"]],
+    [["One","Een"],["Two","Twee"],["Three","Drie"],["Four","Vier"],["Five","Vijf"],["Six","Zes"],["Seven","Zeven"],["Eight","Acht"]],
+    [["Mother","Moeder"],["Father","Vader"],["Sister","Zus"],["Brother","Broer"]],
+    [["Friend","Vriend"],["Family","Familie"],["Son","Zoon"],["Daughter","Dochter"]],
+    [["Red","Rood"],["Blue","Blauw"],["Green","Groen"],["Yellow","Geel"],["Black","Zwart"],["White","Wit"],["Orange","Oranje"],["Purple","Paars"]],
+    [["Monday","Maandag"],["Tuesday","Dinsdag"],["Friday","Vrijdag"],["Sunday","Zondag"]],
+    [["Today","Vandaag"],["Tomorrow","Morgen"],["Yesterday","Gisteren"],["Now","Nu"]],
+    [["Water","Water"],["Bread","Brood"],["Rice","Rijst"],["Meat","Vlees"],["Fruit","Fruit"],["Vegetable","Groente"],["Milk","Melk"],["Egg","Ei"]],
+    [["I am","Ik ben"],["You are","Jij bent"],["I have","Ik heb"],["I want","Ik wil"]],
+    [["What","Wat"],["Where","Waar"],["When","Wanneer"],["Why","Waarom"]],
+    [["Head","Hoofd"],["Hand","Hand"],["Eye","Oog"],["Heart","Hart"]],
+    [["Shirt","Overhemd"],["Shoes","Schoenen"],["Hat","Hoed"],["Dress","Jurk"]],
+    [["Sun","Zon"],["Rain","Regen"],["Wind","Wind"],["Snow","Sneeuw"]],
+    [["Dog","Hond"],["Cat","Kat"],["Bird","Vogel"],["Fish","Vis"]],
+    [["House","Huis"],["Door","Deur"],["Window","Raam"],["Room","Kamer"]],
+    [["Big","Groot"],["Small","Klein"],["Good","Goed"],["Bad","Slecht"]]
+  ],
+  sv: [
+    [["Hello","Hej"],["Goodbye","Hej då"],["Please","Snälla"],["Thank you","Tack"]],
+    [["Yes","Ja"],["No","Nej"],["How are you?","Hur mår du?"],["I'm fine","Jag mår bra"]],
+    [["One","Ett"],["Two","Två"],["Three","Tre"],["Four","Fyra"],["Five","Fem"],["Six","Sex"],["Seven","Sju"],["Eight","Åtta"]],
+    [["Mother","Mamma"],["Father","Pappa"],["Sister","Syster"],["Brother","Bror"]],
+    [["Friend","Vän"],["Family","Familj"],["Son","Son"],["Daughter","Dotter"]],
+    [["Red","Röd"],["Blue","Blå"],["Green","Grön"],["Yellow","Gul"],["Black","Svart"],["White","Vit"],["Orange","Orange"],["Purple","Lila"]],
+    [["Monday","Måndag"],["Tuesday","Tisdag"],["Friday","Fredag"],["Sunday","Söndag"]],
+    [["Today","Idag"],["Tomorrow","Imorgon"],["Yesterday","Igår"],["Now","Nu"]],
+    [["Water","Vatten"],["Bread","Bröd"],["Rice","Ris"],["Meat","Kött"],["Fruit","Frukt"],["Vegetable","Grönsak"],["Milk","Mjölk"],["Egg","Ägg"]],
+    [["I am","Jag är"],["You are","Du är"],["I have","Jag har"],["I want","Jag vill"]],
+    [["What","Vad"],["Where","Var"],["When","När"],["Why","Varför"]],
+    [["Head","Huvud"],["Hand","Hand"],["Eye","Öga"],["Heart","Hjärta"]],
+    [["Shirt","Skjorta"],["Shoes","Skor"],["Hat","Hatt"],["Dress","Klänning"]],
+    [["Sun","Sol"],["Rain","Regn"],["Wind","Vind"],["Snow","Snö"]],
+    [["Dog","Hund"],["Cat","Katt"],["Bird","Fågel"],["Fish","Fisk"]],
+    [["House","Hus"],["Door","Dörr"],["Window","Fönster"],["Room","Rum"]],
+    [["Big","Stor"],["Small","Liten"],["Good","Bra"],["Bad","Dålig"]]
+  ],
+  no: [
+    [["Hello","Hei"],["Goodbye","Ha det"],["Please","Vær så snill"],["Thank you","Takk"]],
+    [["Yes","Ja"],["No","Nei"],["How are you?","Hvordan har du det?"],["I'm fine","Jeg har det bra"]],
+    [["One","En"],["Two","To"],["Three","Tre"],["Four","Fire"],["Five","Fem"],["Six","Seks"],["Seven","Sju"],["Eight","Åtte"]],
+    [["Mother","Mor"],["Father","Far"],["Sister","Søster"],["Brother","Bror"]],
+    [["Friend","Venn"],["Family","Familie"],["Son","Sønn"],["Daughter","Datter"]],
+    [["Red","Rød"],["Blue","Blå"],["Green","Grønn"],["Yellow","Gul"],["Black","Svart"],["White","Hvit"],["Orange","Oransje"],["Purple","Lilla"]],
+    [["Monday","Mandag"],["Tuesday","Tirsdag"],["Friday","Fredag"],["Sunday","Søndag"]],
+    [["Today","I dag"],["Tomorrow","I morgen"],["Yesterday","I går"],["Now","Nå"]],
+    [["Water","Vann"],["Bread","Brød"],["Rice","Ris"],["Meat","Kjøtt"],["Fruit","Frukt"],["Vegetable","Grønnsak"],["Milk","Melk"],["Egg","Egg"]],
+    [["I am","Jeg er"],["You are","Du er"],["I have","Jeg har"],["I want","Jeg vil"]],
+    [["What","Hva"],["Where","Hvor"],["When","Når"],["Why","Hvorfor"]],
+    [["Head","Hode"],["Hand","Hånd"],["Eye","Øye"],["Heart","Hjerte"]],
+    [["Shirt","Skjorte"],["Shoes","Sko"],["Hat","Hatt"],["Dress","Kjole"]],
+    [["Sun","Sol"],["Rain","Regn"],["Wind","Vind"],["Snow","Snø"]],
+    [["Dog","Hund"],["Cat","Katt"],["Bird","Fugl"],["Fish","Fisk"]],
+    [["House","Hus"],["Door","Dør"],["Window","Vindu"],["Room","Rom"]],
+    [["Big","Stor"],["Small","Liten"],["Good","God"],["Bad","Dårlig"]]
+  ],
+  da: [
+    [["Hello","Hej"],["Goodbye","Farvel"],["Please","Vær så venlig"],["Thank you","Tak"]],
+    [["Yes","Ja"],["No","Nej"],["How are you?","Hvordan har du det?"],["I'm fine","Jeg har det godt"]],
+    [["One","En"],["Two","To"],["Three","Tre"],["Four","Fire"],["Five","Fem"],["Six","Seks"],["Seven","Syv"],["Eight","Otte"]],
+    [["Mother","Mor"],["Father","Far"],["Sister","Søster"],["Brother","Bror"]],
+    [["Friend","Ven"],["Family","Familie"],["Son","Søn"],["Daughter","Datter"]],
+    [["Red","Rød"],["Blue","Blå"],["Green","Grøn"],["Yellow","Gul"],["Black","Sort"],["White","Hvid"],["Orange","Orange"],["Purple","Lilla"]],
+    [["Monday","Mandag"],["Tuesday","Tirsdag"],["Friday","Fredag"],["Sunday","Søndag"]],
+    [["Today","I dag"],["Tomorrow","I morgen"],["Yesterday","I går"],["Now","Nu"]],
+    [["Water","Vand"],["Bread","Brød"],["Rice","Ris"],["Meat","Kød"],["Fruit","Frugt"],["Vegetable","Grøntsag"],["Milk","Mælk"],["Egg","Æg"]],
+    [["I am","Jeg er"],["You are","Du er"],["I have","Jeg har"],["I want","Jeg vil"]],
+    [["What","Hvad"],["Where","Hvor"],["When","Hvornår"],["Why","Hvorfor"]],
+    [["Head","Hoved"],["Hand","Hånd"],["Eye","Øje"],["Heart","Hjerte"]],
+    [["Shirt","Skjorte"],["Shoes","Sko"],["Hat","Hat"],["Dress","Kjole"]],
+    [["Sun","Sol"],["Rain","Regn"],["Wind","Vind"],["Snow","Sne"]],
+    [["Dog","Hund"],["Cat","Kat"],["Bird","Fugl"],["Fish","Fisk"]],
+    [["House","Hus"],["Door","Dør"],["Window","Vindue"],["Room","Værelse"]],
+    [["Big","Stor"],["Small","Lille"],["Good","God"],["Bad","Dårlig"]]
+  ],
+  pl: [
+    [["Hello","Cześć"],["Goodbye","Do widzenia"],["Please","Proszę"],["Thank you","Dziękuję"]],
+    [["Yes","Tak"],["No","Nie"],["How are you?","Jak się masz?"],["I'm fine","W porządku"]],
+    [["One","Jeden"],["Two","Dwa"],["Three","Trzy"],["Four","Cztery"],["Five","Pięć"],["Six","Sześć"],["Seven","Siedem"],["Eight","Osiem"]],
+    [["Mother","Matka"],["Father","Ojciec"],["Sister","Siostra"],["Brother","Brat"]],
+    [["Friend","Przyjaciel"],["Family","Rodzina"],["Son","Syn"],["Daughter","Córka"]],
+    [["Red","Czerwony"],["Blue","Niebieski"],["Green","Zielony"],["Yellow","Żółty"],["Black","Czarny"],["White","Biały"],["Orange","Pomarańczowy"],["Purple","Fioletowy"]],
+    [["Monday","Poniedziałek"],["Tuesday","Wtorek"],["Friday","Piątek"],["Sunday","Niedziela"]],
+    [["Today","Dzisiaj"],["Tomorrow","Jutro"],["Yesterday","Wczoraj"],["Now","Teraz"]],
+    [["Water","Woda"],["Bread","Chleb"],["Rice","Ryż"],["Meat","Mięso"],["Fruit","Owoc"],["Vegetable","Warzywo"],["Milk","Mleko"],["Egg","Jajko"]],
+    [["I am","Jestem"],["You are","Jesteś"],["I have","Mam"],["I want","Chcę"]],
+    [["What","Co"],["Where","Gdzie"],["When","Kiedy"],["Why","Dlaczego"]],
+    [["Head","Głowa"],["Hand","Ręka"],["Eye","Oko"],["Heart","Serce"]],
+    [["Shirt","Koszula"],["Shoes","Buty"],["Hat","Czapka"],["Dress","Sukienka"]],
+    [["Sun","Słońce"],["Rain","Deszcz"],["Wind","Wiatr"],["Snow","Śnieg"]],
+    [["Dog","Pies"],["Cat","Kot"],["Bird","Ptak"],["Fish","Ryba"]],
+    [["House","Dom"],["Door","Drzwi"],["Window","Okno"],["Room","Pokój"]],
+    [["Big","Duży"],["Small","Mały"],["Good","Dobry"],["Bad","Zły"]]
+  ],
+  te: [
+    [["Hello","నమస్కారం"],["Goodbye","వీడ్కోలు"],["Please","దయచేసి"],["Thank you","ధన్యవాదాలు"]],
+    [["Yes","అవును"],["No","కాదు"],["How are you?","మీరు ఎలా ఉన్నారు?"],["I'm fine","నేను బాగున్నాను"]],
+    [["One","ఒకటి"],["Two","రెండు"],["Three","మూడు"],["Four","నాలుగు"],["Five","ఐదు"],["Six","ఆరు"],["Seven","ఏడు"],["Eight","ఎనిమిది"]],
+    [["Mother","అమ్మ"],["Father","నాన్న"],["Sister","సోదరి"],["Brother","సోదరుడు"]],
+    [["Friend","స్నేహితుడు"],["Family","కుటుంబం"],["Son","కొడుకు"],["Daughter","కూతురు"]],
+    [["Red","ఎరుపు"],["Blue","నీలం"],["Green","ఆకుపచ్చ"],["Yellow","పసుపు"],["Black","నలుపు"],["White","తెలుపు"],["Orange","నారింజ"],["Purple","ఊదా"]],
+    [["Monday","సోమవారం"],["Tuesday","మంగళవారం"],["Friday","శుక్రవారం"],["Sunday","ఆదివారం"]],
+    [["Today","ఈరోజు"],["Tomorrow","రేపు"],["Yesterday","నిన్న"],["Now","ఇప్పుడు"]],
+    [["Water","నీరు"],["Bread","రొట్టె"],["Rice","అన్నం"],["Meat","మాంసం"],["Fruit","పండు"],["Vegetable","కూరగాయ"],["Milk","పాలు"],["Egg","గుడ్డు"]],
+    [["I am","నేను ఉన్నాను"],["You are","నువ్వు ఉన్నావు"],["I have","నాకు ఉంది"],["I want","నాకు కావాలి"]],
+    [["What","ఏమిటి"],["Where","ఎక్కడ"],["When","ఎప్పుడు"],["Why","ఎందుకు"]],
+    [["Head","తల"],["Hand","చేయి"],["Eye","కన్ను"],["Heart","గుండె"]],
+    [["Shirt","చొక్కా"],["Shoes","బూట్లు"],["Hat","టోపీ"],["Dress","గౌను"]],
+    [["Sun","సూర్యుడు"],["Rain","వర్షం"],["Wind","గాలి"],["Snow","మంచు"]],
+    [["Dog","కుక్క"],["Cat","పిల్లి"],["Bird","పక్షి"],["Fish","చేప"]],
+    [["House","ఇల్లు"],["Door","తలుపు"],["Window","కిటికీ"],["Room","గది"]],
+    [["Big","పెద్ద"],["Small","చిన్న"],["Good","మంచి"],["Bad","చెడ్డ"]]
+  ]
+};
+
+const FALLBACK_TOPICS = [
+  { title:"Subject pronouns", grammarTitle:"Subject pronouns",
+    grammarText:"Subject pronouns tell you who is doing the action: I, you, he, she, it, we, they.",
+    vocab:[["I / you / she","subject pronoun"],["we / they","plural pronoun"]],
+    exercises:[
+      {type:"mc", prompt:"Which pronoun refers to a single female person?", options:["They","She","We","You"], answer:1},
+      {type:"mc", prompt:"Complete: 'They ___ students.'", options:["is","am","are","be"], answer:2},
+      {type:"mc", prompt:"Which is a first-person pronoun?", options:["I","She","It","They"], answer:0},
+      {type:"type", prompt:"Type the verb: 'She ___ happy.' (use 'is')", answer:"is"}
+    ]},
+  { title:"The verb 'to be'", grammarTitle:"The verb 'to be'",
+    grammarText:"The verb 'to be' changes depending on who's talking: I am, you are, she is.",
+    vocab:[["I am","1st person"],["You are","2nd person"],["She is","3rd person"]],
+    exercises:[
+      {type:"mc", prompt:"Complete: 'I ___ a student.'", options:["am","is","are","be"], answer:0},
+      {type:"mc", prompt:"Complete: 'He ___ tired.'", options:["am","is","are","be"], answer:1},
+      {type:"mc", prompt:"Which is correct?", options:["They is happy","They am happy","They are happy","They be happy"], answer:2},
+      {type:"type", prompt:"Type the correct verb: 'We ___ ready.' (use 'are')", answer:"are"}
+    ]},
+  { title:"Plural nouns", grammarTitle:"Plural nouns",
+    grammarText:"Most nouns become plural by adding -s, or -es after s, x, and ch sounds.",
+    vocab:[["cat -> cats","regular plural"],["box -> boxes","add -es after x"]],
+    exercises:[
+      {type:"mc", prompt:"What is the plural of 'book'?", options:["book","books","bookes","bookies"], answer:1},
+      {type:"mc", prompt:"What is the plural of 'box'?", options:["boxs","box","boxes","boxen"], answer:2},
+      {type:"mc", prompt:"Which of these is already plural?", options:["child","children","mouse","foot"], answer:1},
+      {type:"type", prompt:"Type the plural of 'dog'.", answer:"dogs"}
+    ]},
+  { title:"Articles: a / an / the", grammarTitle:"Articles: a / an / the",
+    grammarText:"Use 'a' before consonant sounds, 'an' before vowel sounds, and 'the' for something specific.",
+    vocab:[["a book","indefinite, consonant sound"],["an apple","indefinite, vowel sound"],["the sun","definite article"]],
+    exercises:[
+      {type:"mc", prompt:"Choose the correct article: '___ apple'", options:["a","an","the","—"], answer:1},
+      {type:"mc", prompt:"Choose the correct article: '___ university' (starts with a consonant sound)", options:["a","an","the","—"], answer:0},
+      {type:"mc", prompt:"Which article refers to something specific already known?", options:["a","an","the","—"], answer:2},
+      {type:"type", prompt:"Fill in: 'I saw ___ elephant.' (use 'an')", answer:"an"}
+    ]},
+  { title:"Basic word order", grammarTitle:"Basic word order (Subject-Verb-Object)",
+    grammarText:"English sentences usually follow Subject-Verb-Object order.",
+    vocab:[["Subject","who/what does the action"],["Verb","the action"],["Object","who/what receives it"]],
+    exercises:[
+      {type:"mc", prompt:"Which sentence has correct word order?", options:["Cake the ate she","She ate the cake","Ate she the cake","The she cake ate"], answer:1},
+      {type:"mc", prompt:"In 'The dog chased the ball', what is the subject?", options:["dog","chased","ball","the"], answer:0},
+      {type:"mc", prompt:"In 'She reads books', what is the object?", options:["She","reads","books","—"], answer:2},
+      {type:"type", prompt:"Complete: 'He ___ pizza.' (use 'eats')", answer:"eats"}
+    ]},
+  { title:"Yes/No questions", grammarTitle:"Yes/No questions",
+    grammarText:"Yes/No questions often start with 'Do', 'Does', or a form of 'to be'.",
+    vocab:[["Do you...?","present simple question"],["Is it...?","to-be question"]],
+    exercises:[
+      {type:"mc", prompt:"Which is a correct yes/no question?", options:["You like coffee?","Do you like coffee?","Like you coffee?","You do like coffee?"], answer:1},
+      {type:"mc", prompt:"Which is a correct yes/no question with 'to be'?", options:["Is she a doctor?","She is a doctor?","Is a doctor she?","Doctor is she?"], answer:0},
+      {type:"mc", prompt:"What's a natural short answer to 'Do you like tea?'", options:["Yes, I do.","Yes, I am.","Yes, do I.","Yes, I like."], answer:0},
+      {type:"type", prompt:"Complete: '___ you ready?' (use 'Are')", answer:"Are"}
+    ]},
+  { title:"Negation", grammarTitle:"Negation",
+    grammarText:"To make a sentence negative, use don't/doesn't with regular verbs, or isn't/aren't with 'to be'.",
+    vocab:[["don't / doesn't","present simple negative"],["isn't / aren't","to-be negative"]],
+    exercises:[
+      {type:"mc", prompt:"Choose the correct negative: 'She ___ like coffee.'", options:["don't","doesn't","not","no"], answer:1},
+      {type:"mc", prompt:"Choose the correct negative: 'They ___ home.'", options:["isn't","aren't","don't","doesn't"], answer:1},
+      {type:"mc", prompt:"Which sentence is correctly negative?", options:["I no like it.","I don't like it.","I not like it.","I doesn't like it."], answer:1},
+      {type:"type", prompt:"Complete: 'He ___ not here.' (use 'is')", answer:"is"}
+    ]},
+  { title:"Adjectives before nouns", grammarTitle:"Adjectives before nouns",
+    grammarText:"In English, adjectives usually come directly before the noun they describe.",
+    vocab:[["a red car","adjective + noun"],["a happy dog","adjective + noun"]],
+    exercises:[
+      {type:"mc", prompt:"Which word order is correct in English?", options:["car red a","a car red","a red car","red a car"], answer:2},
+      {type:"mc", prompt:"Choose the adjective in: 'The tall man left.'", options:["tall","man","left","the"], answer:0},
+      {type:"mc", prompt:"Which sentence uses the adjective correctly?", options:["She has a house big.","She has a big house.","Big she has a house.","House she has a big."], answer:1},
+      {type:"type", prompt:"Complete: 'It's a ___ day.' (use 'nice')", answer:"nice"}
+    ]},
+  { title:"Possessive pronouns", grammarTitle:"Possessive pronouns",
+    grammarText:"Possessive pronouns show ownership: my, your, his, her, our, their.",
+    vocab:[["my / your","1st/2nd possessive"],["his / her / their","3rd possessive"]],
+    exercises:[
+      {type:"mc", prompt:"Choose: 'This is ___ book.' (belongs to me)", options:["me","my","I","mine is"], answer:1},
+      {type:"mc", prompt:"Choose: '___ car is red.' (belongs to her)", options:["She","Her","Hers","He"], answer:1},
+      {type:"mc", prompt:"Which is correct?", options:["That is theirs house.","That is their house.","That is them house.","That is they house."], answer:1},
+      {type:"type", prompt:"Complete: 'Is this ___ pen?' (belongs to you, use 'your')", answer:"your"}
+    ]},
+  { title:"Prepositions of place", grammarTitle:"Prepositions of place",
+    grammarText:"In, on, and under describe where something is located.",
+    vocab:[["in the box","inside"],["on the table","surface"],["under the bed","below"]],
+    exercises:[
+      {type:"mc", prompt:"The cat is ___ the box. (inside)", options:["in","on","under","at"], answer:0},
+      {type:"mc", prompt:"The book is ___ the table. (on the surface)", options:["in","on","under","at"], answer:1},
+      {type:"mc", prompt:"The shoes are ___ the bed. (below)", options:["in","on","under","at"], answer:2},
+      {type:"type", prompt:"Complete: 'She is ___ home.' (use 'at')", answer:"at"}
+    ]},
+  { title:"Present tense verbs", grammarTitle:"Present tense verbs",
+    grammarText:"Add -s to the verb for he/she/it in the present tense: I eat, she eats.",
+    vocab:[["I eat","1st person present"],["she eats","3rd person, add -s"]],
+    exercises:[
+      {type:"mc", prompt:"Choose: 'He ___ to school every day.'", options:["walk","walks","walking","walked"], answer:1},
+      {type:"mc", prompt:"Choose: 'I ___ coffee every morning.'", options:["drink","drinks","drinking","drank"], answer:0},
+      {type:"mc", prompt:"Which verb form is correct for 'she'?", options:["go","goes","going","went"], answer:1},
+      {type:"type", prompt:"Complete: 'They ___ football on Sundays.' (use 'play')", answer:"play"}
+    ]},
+  { title:"Question words", grammarTitle:"Question words",
+    grammarText:"What, where, when, why, and who each ask about something different.",
+    vocab:[["what / where","object / place"],["when / why","time / reason"],["who","person"]],
+    exercises:[
+      {type:"mc", prompt:"Which question word asks about a place?", options:["What","Where","When","Who"], answer:1},
+      {type:"mc", prompt:"Which question word asks about a reason?", options:["What","Where","Why","Who"], answer:2},
+      {type:"mc", prompt:"Which question word asks about a person?", options:["What","Where","Who","When"], answer:2},
+      {type:"type", prompt:"Complete: '___ is your name?' (use 'What')", answer:"What"}
+    ]},
+  { title:"Cardinal numbers", grammarTitle:"Cardinal numbers",
+    grammarText:"Numbers are used for counting, prices, and quantities.",
+    vocab:[["one, two, three","counting"],["ten, twenty, thirty","tens"]],
+    exercises:[
+      {type:"mc", prompt:"What comes after 'seven'?", options:["six","eight","nine","ten"], answer:1},
+      {type:"mc", prompt:"Which is the correct counting order?", options:["3, 1, 2","1, 2, 3","2, 3, 1","1, 3, 2"], answer:1},
+      {type:"mc", prompt:"How many is 'a dozen'?", options:["10","12","20","100"], answer:1},
+      {type:"type", prompt:"Type the number word for 9.", answer:"nine"}
+    ]},
+  { title:"Telling time expressions", grammarTitle:"Telling time expressions",
+    grammarText:"Words like today, tomorrow, and now describe when something happens.",
+    vocab:[["today / tomorrow","time words"],["now / later","time words"]],
+    exercises:[
+      {type:"mc", prompt:"Which word means 'this current day'?", options:["today","tomorrow","yesterday","later"], answer:0},
+      {type:"mc", prompt:"Which word means 'the day after today'?", options:["today","tomorrow","yesterday","now"], answer:1},
+      {type:"mc", prompt:"Which word means 'at this moment'?", options:["today","later","now","yesterday"], answer:2},
+      {type:"type", prompt:"Complete: 'See you ___!' (meaning tomorrow)", answer:"tomorrow"}
+    ]},
+  { title:"Comparatives", grammarTitle:"Comparatives",
+    grammarText:"Add -er to short adjectives (bigger), or use 'more' with longer ones (more interesting).",
+    vocab:[["big -> bigger","comparative +er"],["good -> better","irregular comparative"]],
+    exercises:[
+      {type:"mc", prompt:"What's the comparative of 'small'?", options:["small","smaller","smallest","more small"], answer:1},
+      {type:"mc", prompt:"What's the comparative of 'good'?", options:["gooder","better","best","more good"], answer:1},
+      {type:"mc", prompt:"Choose correctly: 'This book is ___ than that one.'", options:["interesting","more interesting","interestinger","most interesting"], answer:1},
+      {type:"type", prompt:"Type the comparative of 'fast'.", answer:"faster"}
+    ]},
+  { title:"Imperatives", grammarTitle:"Imperatives (commands)",
+    grammarText:"Commands drop the subject and start straight with the verb: Sit! Stop! Please wait.",
+    vocab:[["Sit!","command"],["Please wait.","polite command"]],
+    exercises:[
+      {type:"mc", prompt:"Which sentence is a command?", options:["She sits.","Sit down!","Sitting now.","She is sitting."], answer:1},
+      {type:"mc", prompt:"Which is a polite command?", options:["Wait!","Please wait.","Waits.","Waiting."], answer:1},
+      {type:"mc", prompt:"Commands usually drop which word?", options:["the verb","the subject","the object","the punctuation"], answer:1},
+      {type:"type", prompt:"Complete: '___ the door!' (use 'Close')", answer:"Close"}
+    ]},
+  { title:"Conjunctions", grammarTitle:"Conjunctions",
+    grammarText:"And, but, and because connect ideas in different ways: adding, contrasting, or explaining.",
+    vocab:[["and","adds"],["but","contrasts"],["because","gives a reason"]],
+    exercises:[
+      {type:"mc", prompt:"Which word joins two similar ideas?", options:["and","but","because","although"], answer:0},
+      {type:"mc", prompt:"Which word shows contrast?", options:["and","but","so","because"], answer:1},
+      {type:"mc", prompt:"Which word gives a reason?", options:["and","but","because","or"], answer:2},
+      {type:"type", prompt:"Complete: 'I stayed home ___ I was sick.' (use 'because')", answer:"because"}
+    ]},
+  { title:"Greeting structures", grammarTitle:"Greeting structures",
+    grammarText:"Some greetings are casual (Hi) and others are more formal or time-based (Good morning).",
+    vocab:[["Hello / Hi","casual greeting"],["Good morning","time-based greeting"]],
+    exercises:[
+      {type:"mc", prompt:"Which greeting is more casual?", options:["Good afternoon","Hi","Good evening","Greetings"], answer:1},
+      {type:"mc", prompt:"Which greeting fits the morning specifically?", options:["Good night","Good morning","Good evening","Goodbye"], answer:1},
+      {type:"mc", prompt:"Which of these is a common farewell?", options:["Hello","Goodbye","Please","Yes"], answer:1},
+      {type:"type", prompt:"Complete a casual greeting: '___, how's it going?' (use 'Hey')", answer:"Hey"}
+    ]},
+  { title:"Politeness & register", grammarTitle:"Politeness & register",
+    grammarText:"Phrases like 'Could you...?' and 'Would you mind...?' soften requests and sound more polite.",
+    vocab:[["Could you...?","polite request"],["Would you mind...?","very polite request"]],
+    exercises:[
+      {type:"mc", prompt:"Which is the most polite request?", options:["Give me water.","Can I have water?","Could you please pass the water?","Water now."], answer:2},
+      {type:"mc", prompt:"Which fits a formal email opening?", options:["Hey!","To Whom It May Concern,","Yo,","Sup,"], answer:1},
+      {type:"mc", prompt:"Which phrase softens a request?", options:["Do it now.","Would you mind doing this?","Just do it.","Now, please."], answer:1},
+      {type:"type", prompt:"Complete: '___ you help me?' (polite, use 'Could')", answer:"Could"}
+    ]},
+  { title:"Review & practice", grammarTitle:"Review & practice",
+    grammarText:"A quick mixed review of pronouns, verbs, and questions before real content picks up here.",
+    vocab:[["Mixed review","pronouns, verbs, questions"],["Keep practicing!","—"]],
+    exercises:[
+      {type:"mc", prompt:"Which sentence is fully correct?", options:["She go to the store yesterday.","She goes to the store yesterday.","She went to the store yesterday.","She going to the store yesterday."], answer:2},
+      {type:"mc", prompt:"Choose the correct question.", options:["Where you are going?","Where are you going?","You are going where?","Going where you are?"], answer:1},
+      {type:"mc", prompt:"Choose the correct negative.", options:["I don't has time.","I don't have time.","I not have time.","I haven't has time."], answer:1},
+      {type:"type", prompt:"Complete: 'This unit was a nice ___.' (use 'review')", answer:"review"}
+    ]}
+];
+
+function distractorsFrom(pool, correct, n){
+  return shuffle(pool.filter(v=>v!==correct)).slice(0,n);
+}
+
+// Best-effort BCP-47 locale tags for the Web Speech API, for languages with real vocabulary.
+// Languages without an entry fall back to the browser's default recognition language.
+const SPEECH_LANG_MAP = {
+  es:"es-ES", fr:"fr-FR", ja:"ja-JP", de:"de-DE", it:"it-IT", pt:"pt-PT", zh:"zh-CN",
+  ko:"ko-KR", ar:"ar-SA", hi:"hi-IN", ru:"ru-RU", sw:"sw-KE", nl:"nl-NL", sv:"sv-SE",
+  no:"nb-NO", da:"da-DK", pl:"pl-PL", te:"te-IN"
+};
+
+function buildUnits(langCode, langName){
+  const catData = LANG_DATA[langCode];
+  if(!catData) return buildFallbackUnits(langCode, langName);
+
+  const allTarget = catData.flatMap(cat => cat.map(pair => pair[1]));
+  const allEnglish = catData.flatMap(cat => cat.map(pair => pair[0]));
+
+  const units = catData.map((cat, idx) => {
+    const [w0, w1] = cat;
+    // Exercises rotate through mc-target / mc-english / type-the-word so units with 4 pairs
+    // (most categories) and units with 8 pairs (merged ones like Numbers/Colors/Food & Drink)
+    // both get a proportionate, varied exercise set.
+    // Exercises rotate through mc-target / mc-english / type-the-word / listen so units with 4
+    // pairs (most categories) and units with 8 pairs (merged ones like Numbers/Colors/Food &
+    // Drink) both get a proportionate, varied exercise set.
+    const exercises = cat.map((pair, pIdx) => {
+      const mode = pIdx % 4;
+      if(mode === 0){
+        return {type:"mc", prompt:`How do you say "${pair[0]}" in ${langName}?`, options: shuffle([pair[1], ...distractorsFrom(allTarget, pair[1], 3)]), answer:null, correctVal:pair[1]};
+      } else if(mode === 1){
+        return {type:"mc", prompt:`What does "${pair[1]}" mean?`, options: shuffle([pair[0], ...distractorsFrom(allEnglish, pair[0], 3)]), answer:null, correctVal:pair[0]};
+      } else if(mode === 2){
+        return {type:"type", prompt:`Type the word for "${pair[0]}" in ${langName}.`, answer:pair[1]};
+      }
+      return {type:"listen", prompt:`Listen, then choose what it means.`, listenText: pair[1], speechLang: SPEECH_LANG_MAP[langCode] || null, options: shuffle([pair[0], ...distractorsFrom(allEnglish, pair[0], 3)]), correctVal:pair[0]};
+    });
+    return {
+      id: `${langCode}-u${idx+1}`,
+      title: CATEGORY_TITLES[idx],
+      locked: false,
+      grammarTitle: CATEGORY_TITLES[idx],
+      grammarText: `In ${langName}, "${w0[0]}" is "${w0[1]}" and "${w1[0]}" is "${w1[1]}". ${CATEGORY_NOTES[idx]}`,
+      vocab: cat.map(p => [p[0], p[1]]),
+      exercises
+    };
+  });
+
+  units.push(buildSpeakingUnit(langCode, langName, catData));
+  return units;
+}
+
+// Picks a handful of words/phrases already taught across this language's units — favoring
+// full phrases over single words — and turns them into "say it out loud" mic prompts.
+function buildSpeakingUnit(langCode, langName, catData){
+  const flat = catData.flatMap(cat => cat);
+  const phrases = flat.filter(p => /[ ?]/.test(p[0]));
+  const singles = flat.filter(p => !/[ ?]/.test(p[0]));
+  const chosen = phrases.slice(0,4).concat(singles.slice(0,4)).slice(0,6);
+  return {
+    id: `${langCode}-speak`,
+    title: "Speak It",
+    locked: false,
+    isSpeaking: true,
+    grammarTitle: "Speak It",
+    grammarText: `Time to practice out loud. Hold (or tap) the mic button and say each phrase in ${langName} — TalkTrial will listen and check what you said against the native answer.`,
+    vocab: chosen,
+    exercises: chosen.map(p => ({type:"speak", prompt:`Say "${p[0]}" in ${langName}.`, answer:p[1], speechLang: SPEECH_LANG_MAP[langCode] || null}))
+  };
+}
+
+function buildFallbackUnits(langCode, langName){
+  const units = FALLBACK_TOPICS.map((topic, idx) => ({
+    id: `${langCode}-u${idx+1}`,
+    title: topic.title,
+    locked: false,
+    isGeneralPath: true,
+    grammarTitle: topic.grammarTitle,
+    grammarText: idx===0
+      ? `Native ${langName} vocabulary and grammar for TalkTrial hasn't been written yet, so this unit — like every unit in this path — uses a general-language warm-up in English instead. It covers the same skill (${topic.grammarTitle.toLowerCase()}) so you can keep progressing; it will be replaced with real ${langName} once that content is ready. ${topic.grammarText}`
+      : `This unit is part of the general-language path standing in for ${langName} until native content is written — it covers ${topic.grammarTitle.toLowerCase()} using English examples. ${topic.grammarText}`,
+    vocab: topic.vocab,
+    exercises: topic.exercises
+  }));
+  units.push(buildFallbackSpeakingUnit(langCode, langName));
+  return units;
+}
+
+// Same idea as buildSpeakingUnit, but for languages without real vocabulary yet: it reuses
+// the general-path English phrases as the thing to say out loud, same as every other unit
+// in that path.
+function buildFallbackSpeakingUnit(langCode, langName){
+  const flat = FALLBACK_TOPICS.flatMap(t => t.vocab);
+  // Skip notation-style entries (slashes, arrows, comma-separated lists) since those aren't
+  // real phrases to say out loud — keep only clean, sayable English phrases/words.
+  const phrases = flat.filter(p => !/[\/,]/.test(p[0]) && !p[0].includes("->"));
+  const chosen = (phrases.length ? phrases : flat).slice(0,6);
+  return {
+    id: `${langCode}-speak`,
+    title: "Speak It",
+    locked: false,
+    isSpeaking: true,
+    isGeneralPath: true,
+    grammarTitle: "Speak It",
+    grammarText: `Native ${langName} speaking content hasn't been written yet, so — like the rest of this general path — this unit uses English phrases instead. Hold (or tap) the mic and say each one out loud; it will be replaced with real ${langName} audio prompts once that content is ready.`,
+    vocab: chosen,
+    exercises: chosen.map(p => ({type:"speak", prompt:`Say "${p[0]}" out loud.`, answer:p[0], speechLang:"en-US"}))
+  };
+}
+
+/* ================= SPACED REPETITION REVIEW ================= */
+// A lightweight SM-2-style scheduler. Each learned word gets a "box" (0-4); correct recall
+// pushes it up a box and pushes its due date further out, a miss drops it back to box 0 so it
+// comes up again soon. Deck entries are keyed "langCode::english::target" so the same English
+// word in two different languages is tracked separately.
+const REVIEW_INTERVALS_DAYS = [0, 1, 3, 7, 16]; // box -> days until due
+
+function reviewKey(langCode, pair){ return `${langCode}::${pair[0]}::${pair[1]}`; }
+
+// Called whenever a unit is completed — adds every word in that unit to the review deck if
+// it isn't already tracked, so review always has fresh material to draw from.
+function addUnitVocabToReviewDeck(langCode, langName, unit){
+  if(!unit.vocab) return;
+  unit.vocab.forEach(pair => {
+    const key = reviewKey(langCode, pair);
+    if(!state.review.deck[key]){
+      state.review.deck[key] = { langCode, langName, en: pair[0], target: pair[1], box:0, dueAt: Date.now() };
+    }
+  });
+}
+
+function wordsDueForReview(){
+  const now = Date.now();
+  return Object.entries(state.review.deck)
+    .filter(([,card]) => card.dueAt <= now)
+    .map(([key,card]) => ({key, ...card}));
+}
+
+function buildReviewSession(){
+  const due = shuffle(wordsDueForReview()).slice(0, 10);
+  const allTargetByLang = {};
+  const allEnglishByLang = {};
+  const questions = due.map(card => {
+    if(!allTargetByLang[card.langCode]){
+      const pool = Object.values(state.review.deck).filter(c=>c.langCode===card.langCode);
+      allTargetByLang[card.langCode] = pool.map(c=>c.target);
+      allEnglishByLang[card.langCode] = pool.map(c=>c.en);
+    }
+    const askTarget = Math.random() < 0.5;
+    return askTarget
+      ? { key:card.key, langName:card.langName, prompt:`How do you say "${card.en}" in ${card.langName}?`, options: shuffle([card.target, ...distractorsFrom(allTargetByLang[card.langCode], card.target, 3)]), correctVal: card.target }
+      : { key:card.key, langName:card.langName, prompt:`What does "${card.target}" mean?`, options: shuffle([card.en, ...distractorsFrom(allEnglishByLang[card.langCode], card.en, 3)]), correctVal: card.en };
+  });
+  return { index:0, questions, correctCount:0, selected:null };
+}
+
+function applyReviewAnswer(key, correct){
+  const card = state.review.deck[key];
+  if(!card) return;
+  if(correct){
+    card.box = Math.min(REVIEW_INTERVALS_DAYS.length-1, card.box+1);
+  } else {
+    card.box = 0;
+  }
+  card.dueAt = Date.now() + REVIEW_INTERVALS_DAYS[card.box]*86400000;
+}
+
+/* ================= LEADERBOARD ================= */
+// Each user writes their own row to a shared key, and reads every other row to build the
+// ranking. Usernames and XP are visible to everyone using the app, by design — this is a
+// public leaderboard, not a private stat.
+const LEADERBOARD_PREFIX = "leaderboard:";
+
+async function syncLeaderboardEntry(){
+  try{
+    if(!window.storage || !state.userId) return;
+    const entry = {
+      name: state.userName || "Learner",
+      avatar: (state.profile && state.profile.avatar) || "🦊",
+      xp: state.xp || 0,
+      updatedAt: Date.now()
+    };
+    await window.storage.set(LEADERBOARD_PREFIX + state.userId, JSON.stringify(entry), true);
+  }catch(e){ /* non-fatal: leaderboard just won't reflect this update yet */ }
+}
+
+async function fetchLeaderboard(){
+  try{
+    if(!window.storage) return [];
+    const listed = await window.storage.list(LEADERBOARD_PREFIX, true);
+    if(!listed || !listed.keys) return [];
+    const rows = await Promise.all(listed.keys.map(async k => {
+      try{
+        const r = await window.storage.get(k, true);
+        if(!r || !r.value) return null;
+        const data = JSON.parse(r.value);
+        const userId = k.slice(LEADERBOARD_PREFIX.length);
+        return { userId, name: data.name || "Learner", avatar: data.avatar || "🦊", xp: data.xp || 0 };
+      }catch(e){ return null; }
+    }));
+    return rows.filter(Boolean).sort((a,b)=>b.xp-a.xp);
+  }catch(e){ return []; }
+}
+
+// Raw bank: each question's options list the correct answer first, then distractors — this
+// gets shuffled per-question at build time so the correct answer's position isn't predictable
+// (previously it was almost always index 1, which a repeat test-taker could learn to exploit).
+// A few tougher, more advanced items are mixed in alongside the original set so the fallback
+// test spans a wider range, not just the easy-to-intermediate band it used to sit in.
+const PLACEMENT_QUESTIONS_RAW = [
+  { q:"Choose the correct sentence.", options:["She goes to school every day.","She go to school every day.","She going to school every day.","She gone to school every day."] },
+  { q:"Fill in the blank: I have already ___ that movie.", options:["seen","saw","seeing","see"] },
+  { q:"Which word is closest in meaning to 'meticulous'?", options:["Careful and precise","Careless","Fast","Distant"] },
+  { q:"Which sentence uses the subjunctive correctly?", options:["If I were rich, I'd travel.","If I was rich, I'd travel.","If I am rich, I'd travel.","If I will be rich, I'd travel."] },
+  { q:"Which sentence is correctly written in the passive voice?", options:["The cake was eaten by the dog.","The dog ate the cake.","The cake eating the dog.","The cake has eat the dog."] },
+  { q:"Which phrasal verb means 'to postpone'?", options:["Put off","Put on","Put up","Put in"] },
+  { q:"Choose the correctly formed third conditional sentence.", options:["If I had known, I would have called you.","If I know, I call you.","If I knew, I would call you.","If I have known, I will call you."] },
+  { q:"Pick the most natural phrasing for a formal email closing.", options:["Best regards","Later, bro","See ya","Whatever"] },
+  { q:"Which sentence correctly uses 'fewer' rather than 'less'?", options:["There are fewer apples than oranges.","There is fewer water in the glass.","She has fewer money than him.","There's fewer traffic today."] },
+  { q:"Reported speech: He said he ___ tired.", options:["was","is","be","being"] },
+  { q:"Which sentence correctly uses 'whom'?", options:["Whom did you give it to?","Who did you give it to?","Whom gave it to you?","Who's did you give it to?"] },
+  { q:"Which sentence best demonstrates correct use of a semicolon?", options:["I like tea; she likes coffee.","I like tea, she likes coffee;","I like tea: she likes coffee.","I like tea; and she likes coffee."] },
+  { q:"Which sentence uses an inversion structure correctly?", options:["Never had she seen such a mess.","Never she had seen such a mess.","She never had seen such a mess.","Never did she has seen such a mess."] },
+  { q:"Which best paraphrases: 'The proposal was met with tacit approval'?", options:["Most people quietly accepted it without objecting.","Everyone loudly praised it in the meeting.","No one understood what it meant.","It was rejected outright by the board."] },
+  { q:"Which sentence correctly uses a cleft structure for emphasis?", options:["It was Maria who solved the problem.","It was solved the problem by Maria.","Maria was who solved the problem.","Was Maria who solved it."] },
+  { q:"Which word best fits: The negotiations reached a ___ after months of disagreement.", options:["stalemate","milestone","footnote","preamble"] }
+];
+
+const PLACEMENT_QUESTIONS = PLACEMENT_QUESTIONS_RAW.map(item => {
+  const correctAnswer = item.options[0];
+  const options = shuffle(item.options);
+  return { q: item.q, options, answer: options.indexOf(correctAnswer) };
+});
+
+// Builds a placement test IN the target language, easiest vocabulary first and hardest last,
+// for any language that has real LANG_DATA. Languages without native content fall back to the
+// generic English grammar test above, since there's no real vocabulary yet to test them on.
+function buildPlacementQuestions(langCode, langName){
+  const catData = LANG_DATA[langCode];
+  if(!catData) return PLACEMENT_QUESTIONS;
+
+  // Ascending difficulty, but weighted harder: skip a few of the easiest categories, then use
+  // nearly every remaining one, so most of the test comes from the tougher back half of the path.
+  const catOrder = [0,2,3,5,6,7,8,9,10,11,12,13,14,15,16];
+
+  return catOrder.map((catIdx, qi) => {
+    const cat = catData[catIdx];
+    const pairIdx = qi % 4; // rotate through all four words in the category across the test
+    const pair = cat[pairIdx];
+    const askForTarget = qi % 2 === 0;
+    // Distractors come from the SAME category (e.g. other days of the week, other colors) instead
+    // of the whole language pool — much harder to guess by elimination than an unrelated word.
+    const otherPairs = cat.filter((_,idx)=>idx!==pairIdx);
+    if(askForTarget){
+      const correctAnswer = pair[1];
+      const options = shuffle([correctAnswer, ...otherPairs.map(p=>p[1])]);
+      return { q: `How do you say "${pair[0]}" in ${langName}?`, options, answer: options.indexOf(correctAnswer) };
+    } else {
+      const correctAnswer = pair[0];
+      const options = shuffle([correctAnswer, ...otherPairs.map(p=>p[0])]);
+      return { q: `What does "${pair[1]}" mean?`, options, answer: options.indexOf(correctAnswer) };
+    }
+  });
+}
+
+
+// One random quick-fire question for the Hearts Reviver challenge — pulled from the
+// current language's real vocabulary when available, otherwise the generic bank.
+function buildReviverQuestion(){
+  const langCode = state.language ? state.language[3] : null;
+  const catData = langCode ? LANG_DATA[langCode] : null;
+  if(catData){
+    const cat = catData[Math.floor(Math.random()*catData.length)];
+    const pairIdx = Math.floor(Math.random()*cat.length);
+    const pair = cat[pairIdx];
+    const otherPairs = shuffle(cat.filter((_,idx)=>idx!==pairIdx)).slice(0,3);
+    const askForTarget = Math.random() < 0.5;
+    if(askForTarget){
+      const correctAnswer = pair[1];
+      const options = shuffle([correctAnswer, ...otherPairs.map(p=>p[1])]);
+      return { q: `How do you say "${pair[0]}" in ${state.language[0]}?`, options, answer: options.indexOf(correctAnswer) };
+    } else {
+      const correctAnswer = pair[0];
+      const options = shuffle([correctAnswer, ...otherPairs.map(p=>p[0])]);
+      return { q: `What does "${pair[1]}" mean?`, options, answer: options.indexOf(correctAnswer) };
+    }
+  }
+  return PLACEMENT_QUESTIONS[Math.floor(Math.random()*PLACEMENT_QUESTIONS.length)];
+}
+
+/* ================= STATE ================= */
+
+const state = {
+  screen:"login",
+  userName:"",
+  isGuest:false,
+  language:null,
+  level:null,
+  xp:0,
+  todayXp:0,
+  dailyGoal:50,
+  streak:0,
+  unitsCompleted:{},
+  placement:{ index:0, answers:{}, active:false, questions:[] },
+  lesson:{ unit:null, exIndex:0, correctInUnit:0 },
+  assistantOpen:false,
+  assistantSeen:{},
+  assistantMessages:[],
+  assistantThinking:false,
+  langSearch:"",
+  langSelectedTemp:null,
+  feedback:null,
+  badges:{},
+  hadPerfectUnit:false,
+  streakToday:false,
+  lastActiveDate:null,
+  placementTaken:false,
+  totalCorrect:0,
+  languagesTried:[],
+  soundOn:true,
+  bestCombo:0,
+  hearts:5,
+  heartRegenAt:null,
+  heartsReviver:null,
+  profile:{ avatar:"🦊", color:"violet", title:"" },
+  review:{ deck:{}, session:null },
+  screenBeforeProfile:null,
+  userId:null,
+  screenBeforeLeaderboard:null,
+  leaderboard:{ rows:null, loading:false }
+};
+
+const HEART_MAX = 5;
+const HEART_REGEN_MS = 2*60*60*1000; // one heart regenerates every 2 hours
+const HEARTS_REVIVER_GOAL = 100; // XP needed in a reviver session to bring every heart back
+const HEARTS_REVIVER_XP_PER_CORRECT = 20; // 5 correct answers = a full revive
+
+// Hearts are shared across the whole app now, not reset to full every time a unit is
+// opened — losing one in unit 3 means you still start unit 4 down a heart.
+function loseHeart(){
+  if(state.hearts <= 0) return;
+  // Every heart lost needs its own regen timer, not just the first one — otherwise all
+  // missing hearts come back at once based on a stale timestamp from the very first loss.
+  if(!state.heartRegenAt) state.heartRegenAt = Date.now() + HEART_REGEN_MS;
+  state.hearts = Math.max(0, state.hearts - 1);
+}
+
+function regenHearts(){
+  if(state.hearts >= HEART_MAX || !state.heartRegenAt) return;
+  const now = Date.now();
+  while(state.hearts < HEART_MAX && state.heartRegenAt && now >= state.heartRegenAt){
+    state.hearts++;
+    state.heartRegenAt = state.hearts < HEART_MAX ? state.heartRegenAt + HEART_REGEN_MS : null;
+  }
+}
+
+function timeUntilNextHeart(){
+  if(state.hearts >= HEART_MAX || !state.heartRegenAt) return null;
+  const ms = state.heartRegenAt - Date.now();
+  if(ms <= 0) return null;
+  const h = Math.floor(ms/3600000);
+  const m = Math.floor((ms%3600000)/60000);
+  return h>0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// Guest sessions must always start completely fresh — never inherit progress that was
+// restored from a previous signed-in session (or anything left over in memory).
+function resetProgressForGuest(){
+  state.language = null;
+  state.level = null;
+  state.xp = 0;
+  state.todayXp = 0;
+  state.streak = 0;
+  state.unitsCompleted = {};
+  state.badges = {};
+  state.placementTaken = false;
+  state.hadPerfectUnit = false;
+  state.streakToday = false;
+  state.lastActiveDate = null;
+  state.totalCorrect = 0;
+  state.languagesTried = [];
+  state.bestCombo = 0;
+  state.langSelectedTemp = null;
+  state.langSearch = "";
+  state.placement = { index:0, answers:{}, active:false, questions:[] };
+  state.review = { deck:{}, session:null };
+}
+
+const ASSISTANT_MSG = {
+  login: "Hi, I'm Way — I'll help you get set up. Sign in or continue as a guest to begin.",
+  language: "Pick any language you like. There are over a hundred here, and you can always add another one later.",
+  "placement-intro": "If you've studied this language before, a quick check-in helps me place you at the right level. Totally optional.",
+  "placement-test": "Just go with your gut. There's no penalty for guessing.",
+  dashboard: "This is your path. Each stop is a lesson — tap the glowing one to keep going. Your streak and XP bar are up top.",
+  lesson: "Read the short grammar note first, then work through the exercises below it. I'll let you know right away if something's off."
+};
+
+/* ================= PERSISTENCE ================= */
+
+const PERSIST_KEY = "talktrial-progress";
+const PERSIST_FIELDS = ["userName","isGuest","language","level","xp","todayXp","dailyGoal","streak",
+  "unitsCompleted","badges","placementTaken","hadPerfectUnit","streakToday","lastActiveDate",
+  "totalCorrect","languagesTried","soundOn","bestCombo","hearts","heartRegenAt","profile","review","userId"];
+
+function makeUserId(){
+  // A small stable per-device id, purely so this user's leaderboard row can be found and
+  // updated again later — it's not shown anywhere and carries no personal info.
+  return "u" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+}
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+async function saveProgress(){
+  try{
+    if(!window.storage) return;
+    if(!state.userId) state.userId = makeUserId();
+    // Progress is remembered for guests too now — otherwise closing the app or
+    // navigating away mid-session would wipe out units they just completed.
+    const snapshot = {};
+    PERSIST_FIELDS.forEach(k => snapshot[k] = state[k]);
+    await window.storage.set(PERSIST_KEY, JSON.stringify(snapshot), false);
+    syncLeaderboardEntry();
+  }catch(e){ /* non-fatal: progress just won't be saved this time */ }
+}
+
+async function loadProgress(){
+  try{
+    if(!window.storage) return false;
+    const result = await window.storage.get(PERSIST_KEY, false);
+    if(!result || !result.value) return false;
+    const saved = JSON.parse(result.value);
+    PERSIST_FIELDS.forEach(k => { if(saved[k] !== undefined) state[k] = saved[k]; });
+    return !!state.language;
+  }catch(e){ return false; }
+}
+
+function applyDailyReset(){
+  const today = todayStr();
+  if(state.lastActiveDate && state.lastActiveDate !== today){
+    const gapDays = Math.round((new Date(today) - new Date(state.lastActiveDate)) / 86400000);
+    if(gapDays > 1) state.streak = 0;
+    state.todayXp = 0;
+    state.streakToday = false;
+  }
+  state.lastActiveDate = today;
+}
+
+/* ================= HELPERS ================= */
+
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function levelFromXp(xp){ return Math.floor(xp/100)+1; }
+function xpIntoLevel(xp){ return xp%100; }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+let _audioCtx = null;
+function playSound(correct){
+  if(state.soundOn===false) return;
+  try{
+    if(!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = _audioCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine";
+    if(correct){
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime+0.09);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    } else {
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.setValueAtTime(174.6, ctx.currentTime+0.1);
+      gain.gain.setValueAtTime(0.10, ctx.currentTime);
+    }
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.28);
+    osc.start(); osc.stop(ctx.currentTime+0.3);
+  }catch(e){ /* audio unsupported or blocked — fail silently */ }
+}
+
+function applyPlacementLevel(level){
+  // NOTE: the placement test only sets a display level — it must never mark
+  // any unit as completed. Every learner starts their path at unit 1.
+  state.level = level;
+  state.placementTaken = true;
+}
+
+function foxSvg(size, mood){
+  mood = mood || "happy";
+  const mouth = mood==="cheer" ? `<path d="M40 61c4 5 16 5 20 0" stroke="#3A2416" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
+              : mood==="sleepy" ? `<path d="M42 62h16" stroke="#3A2416" stroke-width="2.4" stroke-linecap="round"/>`
+              : `<path d="M42 60c3 3 13 3 16 0" stroke="#3A2416" stroke-width="2.4" stroke-linecap="round" fill="none"/>`;
+  const eyes = mood==="sleepy"
+    ? `<path d="M32 46h8M60 46h8" stroke="#3A2416" stroke-width="2.6" stroke-linecap="round"/>`
+    : `<circle cx="36" cy="45" r="3.2" fill="#3A2416"/><circle cx="64" cy="45" r="3.2" fill="#3A2416"/>`;
+  const brows = mood==="cheer" ? `<path d="M29 38l8-3M63 35l8 3" stroke="#B35F26" stroke-width="2.4" stroke-linecap="round"/>` : ``;
+  return `
+  <svg class="mascot" width="${size}" height="${size}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TalkTrial fox mascot">
+    <path d="M20 30 L34 15 L40 34 Z" fill="var(--fox)"/>
+    <path d="M80 30 L66 15 L60 34 Z" fill="var(--fox)"/>
+    <path d="M24 27 L32 20 L35 30 Z" fill="var(--fox-cream)"/>
+    <path d="M76 27 L68 20 L65 30 Z" fill="var(--fox-cream)"/>
+    <ellipse cx="50" cy="52" rx="34" ry="30" fill="var(--fox)"/>
+    <path d="M50 40 C40 40 33 50 36 62 C40 74 60 74 64 62 C67 50 60 40 50 40Z" fill="var(--fox-cream)"/>
+    ${brows}
+    ${eyes}
+    <path d="M47 52 L53 52 L50 57 Z" fill="#3A2416"/>
+    ${mouth}
+  </svg>`;
+}
+
+const BADGES = [
+  {id:"first_step", emoji:"🥾", title:"First step", check: s=>Object.keys(s.unitsCompleted).length>=1},
+  {id:"three_streak", emoji:"🔥", title:"3-day streak", check: s=>s.streak>=3},
+  {id:"perfectionist", emoji:"🎯", title:"Perfectionist", check: s=>s.hadPerfectUnit},
+  {id:"quick_learner", emoji:"🧭", title:"Level checked", check: s=>!!s.placementTaken},
+  {id:"combo_master", emoji:"⚡", title:"5-combo", check: s=>(s.bestCombo||0)>=5},
+  {id:"century", emoji:"💯", title:"100 correct", check: s=>(s.totalCorrect||0)>=100},
+  {id:"polyglot", emoji:"🌍", title:"Polyglot", check: s=>(s.languagesTried||[]).length>=2},
+  {id:"halfway", emoji:"🏔️", title:"10 units cleared", check: s=>Object.keys(s.unitsCompleted).length>=10},
+  {id:"fox_whisperer", emoji:"🌰", title:"Fox Whisperer", check: s=>!!s.foundFoxSecret}
+];
+
+function checkBadges(){
+  const newly = [];
+  BADGES.forEach(b=>{
+    if(!state.badges[b.id] && b.check(state)){
+      state.badges[b.id] = true;
+      newly.push(b);
+    }
+  });
+  return newly;
+}
+
+function fireConfetti(){
+  const colors = ["#8B5CF6","#FF4FA6","#2EE6B8","#FFC94D","#FF8A57"];
+  for(let i=0;i<28;i++){
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random()*100+"vw";
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (1.8+Math.random()*1.2)+"s";
+    el.style.animationDelay = (Math.random()*0.4)+"s";
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 3200);
+  }
+}
+
+function showBadgeToast(badge){
+  const t = document.createElement("div");
+  t.className = "badge-toast";
+  t.innerHTML = `<span style="font-size:20px;">${badge.emoji}</span> New badge: ${escapeHtml(badge.title)}`;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+/* ================= RENDER ================= */
+
+const app = document.getElementById("app");
+
+function render(){
+  maybeAutoOpenAssistant();
+
+  let html = "";
+  if(state.screen==="login") html = renderLogin();
+  else if(state.screen==="language") html = renderLanguage();
+  else if(state.screen==="placement-intro") html = renderPlacementIntro();
+  else if(state.screen==="placement-test") html = renderPlacementTest();
+  else if(state.screen==="dashboard") html = renderDashboard();
+  else if(state.screen==="lesson") html = renderLesson();
+  else if(state.screen==="unit-complete") html = renderUnitComplete();
+  else if(state.screen==="hearts-reviver") html = renderHeartsReviver();
+  else if(state.screen==="review") html = renderReview();
+  else if(state.screen==="review-complete") html = renderReviewComplete();
+  else if(state.screen==="profile") html = renderProfile();
+  else if(state.screen==="leaderboard") html = renderLeaderboard();
+
+  const showTopbar = ["language","placement-intro","placement-test","dashboard","lesson","unit-complete","hearts-reviver","review","review-complete","profile","leaderboard"].includes(state.screen);
+  const assistant = state.screen==="login" ? "" : renderAssistant();
+
+  app.innerHTML = (showTopbar && state.screen!=="lesson" && state.screen!=="hearts-reviver" && state.screen!=="review" ? renderTopbar() : ((state.screen==="lesson"||state.screen==="hearts-reviver"||state.screen==="review") ? renderMiniTopbarForLesson() : "")) + html + assistant;
+  bindEvents();
+
+  if(state.screen==="unit-complete"){
+    fireConfetti();
+    const newBadges = (state.lesson.newBadges || []);
+    newBadges.forEach((b,i)=> setTimeout(()=>showBadgeToast(b), 500 + i*1500));
+  }
+  if(state.screen==="dashboard"){
+    const newBadges = checkBadges();
+    newBadges.forEach((b,i)=> setTimeout(()=>showBadgeToast(b), 400 + i*1500));
+  }
+  if(state.screen==="leaderboard" && state.leaderboard.rows===null && !state.leaderboard.loading){
+    state.leaderboard.loading = true;
+    fetchLeaderboard().then(rows => {
+      state.leaderboard.rows = rows;
+      state.leaderboard.loading = false;
+      if(state.screen==="leaderboard") render();
+    });
+  }
+  if(state.screen!=="login") saveProgress();
+}
+
+function renderTopbar(){
+  const p = state.profile || {avatar:"🦊", color:"violet"};
+  return `
+  <div class="topbar">
+    <div class="topbar-brand" id="topbarBrand" role="button" aria-label="Go to language selection"><span class="brand-dot"></span> TalkTrial</div>
+    <div class="topbar-stats">
+      ${state.language ? `<span class="stat-pill">${state.language[2]} ${escapeHtml(state.language[0])}</span>` : ""}
+      ${state.screen==="dashboard" ? `
+      <span class="stat-pill">🔥 ${state.streak}</span>
+      <span class="stat-pill">⭐ ${state.xp} XP</span>` : ""}
+      ${state.screen!=="language" ? `<button id="topbarLeaderboardBtn" aria-label="Leaderboard" title="Leaderboard" class="stat-pill" style="cursor:pointer; border:none;">🏆</button>` : ""}
+      ${state.screen!=="language" ? `<button id="topbarProfileBtn" aria-label="Edit profile" title="Your profile" style="width:32px; height:32px; border-radius:50%; border:2px solid var(--${p.color||"violet"}); background:var(--paper-2); font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;">${p.avatar||"🦊"}</button>` : ""}
+    </div>
+  </div>`;
+}
+function renderMiniTopbarForLesson(){
+  return `<div class="topbar"><div class="topbar-brand" id="topbarBrand" role="button" aria-label="Go to language selection"><span class="brand-dot"></span> TalkTrial</div>
+    <span class="stat-pill">⭐ ${state.xp} XP</span></div>`;
+}
+
+function renderAssistant(){
+  return `
+  <button class="assistant-fab mascot-wiggle" id="assistantFab" aria-label="Open assistant">
+    ${foxSvg(38, "happy")}
+  </button>
+  ${state.assistantOpen ? renderAssistantBubble() : ""}
+  `;
+}
+
+function renderAssistantBubble(){
+  const thread = state.assistantMessages;
+  return `
+  <div class="assistant-bubble paper-card">
+    <div class="assistant-head">
+      <div class="assistant-name">${foxSvg(18,"happy")} Way, your guide</div>
+      <button class="assistant-close-x" id="assistantClose" aria-label="Close">✕</button>
+    </div>
+    <div class="assistant-thread" id="assistantThread">
+      ${thread.map(m => m.role==="fox" ? `
+        <div class="msg-row from-fox">
+          ${foxSvg(20,"happy")}
+          <div class="msg-bubble">${escapeHtml(m.text)}</div>
+        </div>` : `
+        <div class="msg-row from-user"><div class="msg-bubble">${escapeHtml(m.text)}</div></div>`
+      ).join("")}
+      ${state.assistantThinking ? `
+        <div class="msg-row from-fox">
+          ${foxSvg(20,"happy")}
+          <div class="msg-bubble msg-typing"><span></span><span></span><span></span></div>
+        </div>` : ""}
+    </div>
+    ${state.screen==="lesson" ? `
+    <div class="assistant-quick-row">
+      <button class="quick-chip" id="quickHint">💡 Hint</button>
+      <button class="quick-chip" id="quickExplain">Explain more</button>
+    </div>` : ""}
+    <div class="assistant-input-row">
+      <input id="assistantInput" placeholder="Ask Way anything…" ${state.assistantThinking?"disabled":""} autocomplete="off" />
+      <button class="assistant-send" id="assistantSend" aria-label="Send" ${state.assistantThinking?"disabled":""}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 11L21 3L14 21L11 13L3 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function openAssistantPanelInPlace(){
+  if(state.assistantOpen) return;
+  state.assistantOpen = true;
+  const fab = document.getElementById("assistantFab");
+  const already = document.querySelector(".assistant-bubble");
+  if(fab && !already){
+    fab.insertAdjacentHTML("afterend", renderAssistantBubble());
+    bindAssistantEvents();
+    scrollAssistantToBottom();
+  }
+}
+
+function scrollAssistantToBottom(){
+  const t = document.getElementById("assistantThread");
+  if(t) t.scrollTop = t.scrollHeight;
+}
+
+function maybeAutoOpenAssistant(){
+  if(state.screen==="login") return;
+  if(!state.assistantSeen[state.screen]){
+    state.assistantSeen[state.screen]=true;
+    state.assistantOpen = true;
+    state.assistantMessages.push({role:"fox", text: ASSISTANT_MSG[state.screen] || "Let me know if you need a hand."});
+  }
+}
+
+function foxContextSummary(){
+  const bits = [];
+  const fullLessonNames = LANGUAGES.filter(l=>LANG_DATA[l[3]]).map(l=>l[0]).join(", ");
+  bits.push(`App facts you can rely on: TalkTrial offers ${LANGUAGES.length} languages total. Every single language — no exceptions — has a fixed learning path of vocabulary/grammar units followed by one final "Speak It" unit for mic practice, unlocked one at a time as the learner completes the previous one. ${Object.keys(LANG_DATA).length} languages currently have fully authored native vocabulary and exercises (${fullLessonNames}) and a 17-unit path plus Speak It; the rest use a general grammar warm-up path in English while native content is written for them, with a 20-unit path plus Speak It. If asked "how many units does [any language] have", say it depends on whether that language has native content yet.`);
+  bits.push(`The learner's name is ${state.userName || "a guest"}.`);
+  if(state.language){
+    bits.push(`They are learning ${state.language[0]} (native name ${state.language[1]}).`);
+    const units = buildUnits(state.language[3], state.language[0]);
+    const completedCount = units.filter(u=>state.unitsCompleted[u.id]).length;
+    bits.push(`In ${state.language[0]} specifically, they have completed ${completedCount} of ${units.length} units.`);
+  }
+  if(state.level) bits.push(`Their placed level is ${state.level}.`);
+  bits.push(`They are currently on the "${state.screen}" screen of the app.`);
+  bits.push(`They have ${state.xp} total XP and a ${state.streak}-day streak.`);
+  if(state.screen==="lesson" && state.lesson.unit){
+    const unit = state.lesson.unit;
+    const ex = unit.exercises[state.lesson.exIndex];
+    bits.push(`They're in the lesson unit "${unit.title}", which teaches: ${unit.grammarTitle} — ${unit.grammarText}`);
+    if(ex) bits.push(`The exercise they're currently looking at is: "${ex.prompt}"${(ex.type==="mc"||ex.type==="listen") ? ` with options ${JSON.stringify(ex.options)}` : " (a type-the-answer question)"}. Do not just hand them the answer outright unless they seem stuck or ask directly — nudge them first.`);
+  }
+  return bits.join(" ");
+}
+
+function localFallbackReply(userText){
+  const t = (userText||"").toLowerCase();
+  const inLesson = state.screen === "lesson" && state.lesson.unit && !state.lesson.outOfHearts;
+  const unit = inLesson ? state.lesson.unit : null;
+  const ex = (inLesson && unit) ? unit.exercises[state.lesson.exIndex] : null;
+
+  if(inLesson && ex && (t.includes("hint") || t.includes("stuck"))){
+    const answer = getCorrectAnswerText(ex);
+    const revealed = answer && answer.length > 1 ? (answer[0] + "…") : (answer || "?");
+    const vocabWords = unit.vocab.map(v=>v[1]).join(", ");
+    return `Here's a hint: this exercise is about "${unit.grammarTitle}". The answer starts with "${revealed}" — this unit's words are ${vocabWords}, so it's one of those.`;
+  }
+  if(inLesson && unit && (t.includes("explain") || t.includes("grammar"))){
+    const vocabList = unit.vocab.map(v=>`"${v[0]}" = "${v[1]}"`).join(", ");
+    return `${unit.grammarTitle}: ${unit.grammarText} This unit's vocab: ${vocabList}.`;
+  }
+  if(inLesson){
+    return "I can't reach my full language brain right now — that needs a live connection this file doesn't have on its own. But the grammar note and vocab list above the exercise have what you need for this one.";
+  }
+  return "I'm having trouble connecting right now — this in-app chat needs to run inside a live Claude session to fully work. Try asking again from within Claude, or take a look at the grammar notes on your current screen in the meantime.";
+}
+
+async function sendAssistantMessage(presetText){
+  const input = document.getElementById("assistantInput");
+  const text = presetText !== undefined ? presetText : ((input && input.value) || "").trim();
+  if(!text || state.assistantThinking) return;
+  if(input) input.value = "";
+  state.assistantMessages.push({role:"user", text});
+  state.assistantThinking = true;
+  render();
+  scrollAssistantToBottom();
+
+  const systemPrompt = `You are Way, a friendly, encouraging fox mascot and in-app guide for TalkTrial, a language-learning app. You help the learner with language questions (grammar, vocabulary, translation, pronunciation tips), and with using the app itself, including questions about how the app is structured (like unit or language counts). Always answer app-structure questions using the "App facts" given in the context below with confidence — don't hedge, guess, or say you're not sure when the facts are right there. Keep replies short and warm — 1-4 sentences, plain text, no markdown formatting, no asterisks. Use at most one emoji, and only if it fits naturally. Context: ${foxContextSummary()}`;
+
+  const history = state.assistantMessages
+    .map(m => ({ role: m.role==="fox" ? "assistant" : "user", content: m.text }));
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: history
+      })
+    });
+    if(!response.ok) throw new Error("bad response: " + response.status);
+    const data = await response.json();
+    if(data.error) throw new Error(data.error.message || "api error");
+    const textBlock = (data.content || []).find(c => c.type === "text");
+    const reply = textBlock && textBlock.text && textBlock.text.trim() ? textBlock.text.trim() : localFallbackReply(text);
+    state.assistantMessages.push({role:"fox", text: reply});
+  } catch(err){
+    state.assistantMessages.push({role:"fox", text: localFallbackReply(text)});
+  }
+  state.assistantThinking = false;
+  render();
+  scrollAssistantToBottom();
+  const inputAgain = document.getElementById("assistantInput");
+  if(inputAgain) inputAgain.focus();
+}
+
+/* ---------- login ---------- */
+function renderLogin(){
+  return `
+  <div class="login-wrap">
+    <div class="login-art">
+      <div class="stamp-ring" style="width:260px;height:260px; top:-60px; left:-60px;"></div>
+      <div class="stamp-ring" style="width:160px;height:160px; bottom:40px; right:20px;"></div>
+      <div class="brand-mark">${foxSvg(26,"happy")} TalkTrial</div>
+      <div>
+        <div class="login-mascot-wrap">
+          <div class="speech">"Come on, let's go!"</div>
+          <div class="mascot-bounce">${foxSvg(96,"cheer")}</div>
+        </div>
+        <div class="login-headline" style="text-align:center;">Learn any language<br>without taking yourself <em>too seriously</em>.</div>
+        <p class="route-caption" style="margin:18px auto 0; text-align:center;">Bite-size grammar, a level check if you want one, and a streak that will absolutely give you side-eye if you skip a day — in over 100 languages.</p>
+      </div>
+      <div class="route-caption" style="text-align:center;">No cram sessions. No pressure. Just a fox who believes in you.</div>
+    </div>
+    <div class="login-form-side">
+      <div class="login-form">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Sign in to continue</h1>
+        <p class="sub">Or jump in as a guest — you can add an email later.</p>
+        <div class="form-row"><label class="field-label">Name</label><input class="field" id="loginName" placeholder="Your name" /></div>
+        <div class="form-row"><label class="field-label">Email</label><input class="field" id="loginEmail" placeholder="name@email.com" /></div>
+        <div class="form-row"><label class="field-label">Password</label><input class="field" type="password" id="loginPassword" placeholder="••••••••" /></div>
+        <button class="btn btn-primary btn-block" id="loginSubmit">Continue</button>
+        <div class="divider-row">or</div>
+        <button class="btn btn-ghost btn-block" id="loginGuest">Continue as guest</button>
+        <p class="switch-line">New here? <button id="loginToggle">This is just a demo, any details work</button></p>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- language select ---------- */
+function renderLanguage(){
+  const q = state.langSearch.toLowerCase();
+  const filtered = LANGUAGES.filter(l => l[0].toLowerCase().includes(q) || l[1].toLowerCase().includes(q));
+  return `
+  <div class="content-wrap">
+    <span class="eyebrow">Step 1 of 3</span>
+    <h1 class="page-heading">Which language are you learning?</h1>
+    <p class="page-sub">Choose from ${LANGUAGES.length}+ languages. Every language has a full unit path from day one, ending in a "Speak It" mic-practice unit — languages tagged "Native words" have real vocabulary and a test in that language; "General path" languages use an English-language warm-up path while native content is written.</p>
+    <div class="search-field">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#5B6B7C" stroke-width="2"/><path d="M21 21l-4-4" stroke="#5B6B7C" stroke-width="2" stroke-linecap="round"/></svg>
+      <input class="field" id="langSearchInput" placeholder="Search languages..." value="${escapeHtml(state.langSearch)}" />
+    </div>
+    <div class="lang-grid" id="langGrid">
+      ${filtered.map(l => `
+        <button class="lang-card ${state.langSelectedTemp && state.langSelectedTemp[3]===l[3] ? 'selected':''}" data-code="${l[3]}">
+          <span class="lang-flag">${l[2]}</span>
+          <span class="lang-name">${escapeHtml(l[0])}</span>
+          <span class="lang-native">${escapeHtml(l[1])}</span>
+          <span class="lang-content-tag ${LANG_DATA[l[3]] ? '' : 'tag-general'}">${LANG_DATA[l[3]] ? 'Native words' : 'General path'}</span>
+        </button>`).join("")}
+    </div>
+    <div class="sticky-footer">
+      <button class="btn btn-stamp" id="langContinue" ${state.langSelectedTemp?"":"disabled"}>Continue</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- placement intro ---------- */
+function renderPlacementIntro(){
+  const qCount = LANG_DATA[state.language[3]] ? 16 : PLACEMENT_QUESTIONS.length;
+  return `
+  <div class="content-wrap">
+    <div class="placement-card paper-card">
+      <div class="stamp-icon-lg">?</div>
+      <span class="eyebrow">Step 2 of 3</span>
+      <h1 class="page-heading" style="margin:10px auto 8px;">Want a quick level check?</h1>
+      <p class="page-sub" style="margin:0 auto;">${qCount} questions covering grammar, vocabulary, and register — about two minutes. Do well and I'll actually skip you ahead in the ${state.language[0]} path, not just label you. You can skip this and start from the beginning instead.</p>
+      <div class="choice-row">
+        <button class="btn btn-stamp" id="startPlacement">Take the quick test</button>
+        <button class="btn btn-ghost" id="skipPlacement">Skip, start at the beginning</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- placement test ---------- */
+function renderPlacementTest(){
+  const i = state.placement.index;
+  const questions = state.placement.questions;
+  const total = questions.length;
+  const qd = questions[i];
+  const answered = state.placement.answers[i];
+  return `
+  <div class="content-wrap">
+    <div class="placement-card paper-card" style="text-align:left;">
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" style="width:${((i+1)/total)*100}%;"></div></div>
+      <span class="eyebrow">Question ${i+1} of ${total}</span>
+      <h2 class="quiz-q">${escapeHtml(qd.q)}</h2>
+      <div class="option-list" id="quizOptions">
+        ${qd.options.map((o,idx)=>{
+          let cls = "option-btn";
+          if(answered){
+            if(idx===qd.answer) cls += " correct";
+            else if(idx===answered.idx) cls += " wrong";
+          }
+          return `<button class="${cls}" data-idx="${idx}" ${answered?"disabled":""}>${escapeHtml(o)}</button>`;
+        }).join("")}
+      </div>
+      ${answered && !answered.correct ? `<p class="quiz-corrector">That's not it — the correct answer is <strong>${escapeHtml(qd.options[qd.answer])}</strong>.</p>` : ""}
+      <div class="quiz-nav-row">
+        <button class="btn btn-ghost" id="quizBack" ${i===0?"disabled":""}>Back</button>
+        <button class="btn btn-stamp" id="quizContinue" ${answered?"":"disabled"}>${i===total-1?"See results":"Continue"}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- dashboard ---------- */
+function renderDashboard(){
+  const units = buildUnits(state.language[3], state.language[0]);
+  const goalPct = Math.min(100, Math.round((state.todayXp/state.dailyGoal)*100));
+  return `
+  <div class="content-wrap">
+    <span class="eyebrow">${state.level || "Beginner"} · ${escapeHtml(state.language[0])}</span>
+    <h1 class="page-heading">Your path</h1>
+    <div class="dash-grid">
+      <div>
+        <div class="paper-card xp-card">
+          <div class="xp-top-row">
+            <span class="xp-level">Level ${levelFromXp(state.xp)}</span>
+            <span class="xp-num">${xpIntoLevel(state.xp)} / 100 XP</span>
+          </div>
+          <div class="xp-track"><div class="xp-fill" style="width:${xpIntoLevel(state.xp)}%;"></div></div>
+        </div>
+        <div class="paper-card" style="padding:30px 20px;">
+          <div class="path-count">${Object.keys(state.unitsCompleted).filter(id=>units.some(u=>u.id===id)).length} of ${units.length} units complete</div>
+          <div class="path-wrap">
+            ${units.map((u,idx)=>{
+              const done = !!state.unitsCompleted[u.id];
+              const prevDone = idx===0 || state.unitsCompleted[units[idx-1].id];
+              const isActive = !done && prevDone;
+              const cls = done ? "done" : (isActive ? "active" : "locked");
+              return `
+              ${idx>0 ? `<div class="unit-connector"></div>` : ""}
+              <div class="unit-node-row">
+                <button class="unit-node ${cls}" data-unit="${u.id}" ${(!isActive && !done)?"disabled":""}>
+                  ${done ? "✓" : (idx+1)}
+                </button>
+                <div class="unit-label">${escapeHtml(u.title)}</div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+        ${units.every(u=>state.unitsCompleted[u.id]) ? `
+        <div class="paper-card" style="padding:24px 26px; margin-top:16px; text-align:center;">
+          <div class="mascot-bounce" style="margin-bottom:6px;">${foxSvg(56,"cheer")}</div>
+          <h3 style="font-family:var(--font-display); font-size:18px; margin:0 0 6px;">You've cleared every unit here.</h3>
+          <p style="font-size:13.5px; color:var(--slate); margin:0;">More ${escapeHtml(state.language[0])} units are on the way. In the meantime, keep your streak alive by revisiting a unit, or try another language.</p>
+        </div>` : ""}
+      </div>
+      <div>
+        <div class="paper-card side-card">
+          <h3>Review</h3>
+          <p style="font-size:13.5px; color:var(--slate); margin:0 0 12px;">${wordsDueForReview().length>0 ? `${wordsDueForReview().length} word${wordsDueForReview().length===1?"":"s"} ready to review.` : (Object.keys(state.review.deck).length>0 ? "You're all caught up — nothing due yet." : "Finish a unit to start building your review deck.")}</p>
+          <button class="btn ${wordsDueForReview().length>0 ? "btn-primary" : "btn-ghost"} btn-block" id="startReview" style="font-size:13.5px; padding:10px;" ${wordsDueForReview().length>0 ? "" : "disabled"}>Review now</button>
+        </div>
+        <div class="paper-card side-card">
+          <h3>Streak</h3>
+          <div class="streak-row">
+            <div class="streak-flame">🔥</div>
+            <div><div class="streak-num">${state.streak} day${state.streak===1?"":"s"}</div><div class="streak-sub">${state.streak===0 ? "Do one lesson to light it up" : "Keep it going, don't let the fox down"}</div></div>
+          </div>
+        </div>
+        <div class="paper-card side-card">
+          <h3>Today's goal</h3>
+          <div class="goal-ring-row">
+            <div class="goal-track"><div class="goal-fill" style="width:${goalPct}%;"></div></div>
+            <span class="goal-text">${state.todayXp}/${state.dailyGoal} XP</span>
+          </div>
+        </div>
+        <div class="paper-card side-card">
+          <h3>Badges</h3>
+          <div class="badge-grid">
+            ${BADGES.map(b=>`
+              <div class="badge-item ${state.badges[b.id]?"":"locked"}">
+                <span class="badge-emoji">${b.emoji}</span>
+                <span class="badge-title">${escapeHtml(b.title)}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+        <div class="paper-card side-card">
+          <h3>Change level</h3>
+          <p style="font-size:13.5px; color:var(--slate); margin:0 0 12px;">Currently set to <strong style="color:var(--ink);">${state.level || "Beginner"}</strong>.</p>
+          <button class="btn btn-ghost btn-block" id="retakePlacement" style="font-size:13.5px; padding:10px;">Retake the level test</button>
+        </div>
+        <div class="paper-card side-card">
+          <h3>Language</h3>
+          <p style="font-size:13.5px; color:var(--slate); margin:0 0 12px;">Learning <strong style="color:var(--ink);">${state.language[2]} ${escapeHtml(state.language[0])}</strong>.</p>
+          <button class="btn btn-ghost btn-block" id="switchLanguage" style="font-size:13.5px; padding:10px;">Switch language</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- lesson ---------- */
+function renderLesson(){
+  const unit = state.lesson.unit;
+
+  if(state.lesson.outOfHearts){
+    const nextIn = timeUntilNextHeart();
+    const canRetry = state.hearts > 0;
+    return `
+    <div class="lesson-shell">
+      <div class="complete-wrap">
+        <div class="mascot-bounce" style="margin-bottom:10px;">${foxSvg(90,"sleepy")}</div>
+        <h1 class="complete-title">Out of hearts</h1>
+        <p class="page-sub" style="margin:0 auto;">Hearts are shared across all of TalkTrial, and you're out right now${nextIn ? ` — your next one regenerates in ${nextIn}` : ""}. Nothing you've already earned is lost.</p>
+        <div style="display:flex; gap:12px; justify-content:center; margin-top:22px; flex-wrap:wrap;">
+          <button class="btn btn-primary" id="heartsReviverBtn">💖 Hearts Reviver</button>
+          ${canRetry ? `<button class="btn" id="heartsRetry">Retry this unit</button>` : ""}
+          <button class="btn ${canRetry ? "" : "btn-ghost"}" id="heartsExit">Back to path</button>
+        </div>
+        <p style="font-size:12.5px; color:var(--slate); margin-top:14px;">Hearts Reviver: answer quick-fire questions and earn ${HEARTS_REVIVER_GOAL} XP to bring all your hearts back instantly.</p>
+      </div>
+    </div>`;
+  }
+
+  const i = state.lesson.exIndex;
+  const total = unit.exercises.length;
+  if(i >= total) return "";
+  const ex = unit.exercises[i];
+  const showGrammar = i===0;
+  const hearts = state.hearts ?? 5;
+  const heartsMarkup = Array.from({length:HEART_MAX}, (_,idx)=> idx<hearts ? "❤️" : "🤍").join("");
+  const combo = state.lesson.combo || 0;
+  return `
+  <div class="lesson-shell">
+    <div class="lesson-top">
+      <button class="icon-btn" id="lessonExit" aria-label="Exit lesson">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#5B6B7C" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="lesson-progress-track"><div class="lesson-progress-fill" style="width:${((i+1)/total)*100}%;"></div></div>
+      <div class="lesson-hearts" title="${hearts} hearts left">${heartsMarkup}</div>
+      <button class="icon-btn" id="soundToggle" aria-label="Toggle sound effects" title="${state.soundOn===false ? "Sound off" : "Sound on"}">${state.soundOn===false ? "🔇" : "🔊"}</button>
+    </div>
+    ${combo>=3 ? `<div class="combo-banner">🔥 ${combo} in a row — keep it up!</div>` : ""}
+    ${unit.isGeneralPath ? `<div class="combo-banner" style="background:var(--paper-2); color:var(--slate); border-color:var(--slate-light);">General path — native ${escapeHtml(state.language[0])} content isn't written yet, so this unit uses English examples.</div>` : ""}
+    ${showGrammar ? `
+    <div class="paper-card grammar-card">
+      <span class="eyebrow">Grammar note</span>
+      <h2>${escapeHtml(unit.grammarTitle)}</h2>
+      <p>${escapeHtml(unit.grammarText)}</p>
+      ${unit.vocab.map(v=>`<div class="vocab-line"><span>${escapeHtml(v[0])}</span><span class="vocab-target">${escapeHtml(v[1])}</span></div>`).join("")}
+    </div>` : ""}
+    <div class="paper-card exercise-card">
+      <span class="eyebrow">Exercise ${i+1} of ${total}</span>
+      <p class="exercise-prompt">${escapeHtml(ex.prompt)}</p>
+      ${ex.type==="mc" ? `
+        <div class="option-list" id="exOptions">
+          ${ex.options.map((o,idx)=>`<button class="option-btn" data-idx="${idx}" data-val="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join("")}
+        </div>` : ex.type==="listen" ? `
+        <div class="speak-row">
+          <button class="mic-btn" id="listenPlayBtn" aria-label="Play audio" title="Play it again">🔊</button>
+          <div class="speak-status" id="listenStatus">Tap play to hear it, then pick what it means.</div>
+        </div>
+        <div class="option-list" id="exOptions">
+          ${ex.options.map((o,idx)=>`<button class="option-btn" data-idx="${idx}" data-val="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join("")}
+        </div>` : ex.type==="speak" ? `
+        <div class="speak-row">
+          <button class="mic-btn" id="micBtn" aria-label="Hold or tap to speak">🎤</button>
+          <div class="speak-status" id="speakStatus">Hold the mic and speak, or tap once to start and tap again to stop.</div>
+          <div class="speak-transcript" id="speakTranscript"></div>
+        </div>` : `
+        <div class="type-answer-row">
+          <input class="field" id="typeAnswerInput" placeholder="Type your answer" />
+          <button class="btn btn-primary" id="typeAnswerSubmit">Check</button>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+/* ---------- unit complete ---------- */
+/* ---------- hearts reviver ---------- */
+function renderHeartsReviver(){
+  const rv = state.heartsReviver;
+  const pct = Math.min(100, Math.round((rv.xpGained/HEARTS_REVIVER_GOAL)*100));
+  const q = rv.question;
+
+  if(rv.revived){
+    return `
+    <div class="lesson-shell">
+      <div class="complete-wrap">
+        <div class="mascot-bounce" style="margin-bottom:10px;">${foxSvg(90,"cheer")}</div>
+        <h1 class="complete-title">Hearts revived!</h1>
+        <p class="page-sub" style="margin:0 auto;">You earned ${rv.xpGained} XP and every heart is back to full. Keep that streak going.</p>
+        <div style="display:flex; gap:12px; justify-content:center; margin-top:22px;">
+          <button class="btn btn-primary" id="reviverDone">Back to path</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="lesson-shell">
+    <div class="complete-wrap">
+      <div class="mascot-bounce" style="margin-bottom:6px;">${foxSvg(80,"happy")}</div>
+      <h1 class="complete-title">Hearts Reviver</h1>
+      <p class="page-sub" style="margin:0 auto 10px;">Answer correctly to earn XP — reach ${HEARTS_REVIVER_GOAL} XP and every heart comes back.</p>
+      <div class="xp-track" style="max-width:320px; margin:0 auto 6px;"><div class="xp-fill" style="width:${pct}%;"></div></div>
+      <p style="font-size:12.5px; color:var(--slate); margin:0 0 20px;">${rv.xpGained} / ${HEARTS_REVIVER_GOAL} XP</p>
+      <div class="paper-card" style="max-width:420px; margin:0 auto; text-align:left;">
+        <p style="font-weight:600; margin:0 0 14px;">${escapeHtml(q.q)}</p>
+        <div id="reviverOptions" style="display:flex; flex-direction:column; gap:10px;">
+          ${q.options.map((opt,idx)=>{
+            let cls = "option-btn";
+            if(rv.selected!==null){
+              if(idx===q.answer) cls += " correct";
+              else if(idx===rv.selected) cls += " wrong";
+            }
+            return `<button class="${cls}" data-idx="${idx}" ${rv.selected!==null ? "disabled" : ""}>${escapeHtml(opt)}</button>`;
+          }).join("")}
+        </div>
+      </div>
+      ${rv.selected!==null ? `
+        <p style="margin-top:16px; font-weight:600; color:${rv.correct ? "var(--teal)" : "var(--stamp)"};">${rv.correct ? `✓ Correct! +${HEARTS_REVIVER_XP_PER_CORRECT} XP` : `Not quite — no XP this time.`}</p>
+        <button class="btn btn-primary" id="reviverNext" style="margin-top:10px;">Next question</button>
+      ` : ""}
+      <div style="margin-top:18px;">
+        <button class="btn btn-ghost" id="reviverExit">Exit — keep XP earned so far</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderUnitComplete(){
+  const earned = state.lesson.lastEarned || 0;
+  const wasPerfect = state.lesson.correctInUnit === state.lesson.unit.exercises.length && state.lesson.wrongTotalInUnit === 0;
+  return `
+  <div class="complete-wrap">
+    ${wasPerfect ? `<div class="perfect-banner">✨ PERFECT UNIT — no mistakes! ✨</div>` : ""}
+    <div class="mascot-bounce" style="margin-bottom:10px;">${foxSvg(90,"cheer")}</div>
+    <h1 class="complete-title">${wasPerfect ? "Flawless." : "Nicely done."}</h1>
+    <p class="page-sub" style="margin:0 auto;">You finished "${escapeHtml(state.lesson.unit.title)}" in ${escapeHtml(state.language[0])}.</p>
+    <div class="reward-row">
+      <div class="reward-item"><div class="reward-num">+${earned}${wasPerfect?" 🌟":""}</div><div class="reward-label">XP earned</div></div>
+      <div class="reward-item"><div class="reward-num">${state.streak}</div><div class="reward-label">Day streak</div></div>
+      <div class="reward-item"><div class="reward-num">Lvl ${levelFromXp(state.xp)}</div><div class="reward-label">Current level</div></div>
+    </div>
+    <button class="btn btn-primary" id="backToDashboard">Continue</button>
+  </div>`;
+}
+
+/* ---------- review (spaced repetition) ---------- */
+function renderReview(){
+  const rv = state.review.session;
+  const q = rv.questions[rv.index];
+  if(!q){
+    // Shouldn't happen (buildReviewSession only runs when there's at least one due word,
+    // and every question gets answered before advancing), but fail safe into the summary.
+    goTo("review-complete");
+    return "";
+  }
+  return `
+  <div class="lesson-shell">
+    <div class="lesson-top">
+      <button class="icon-btn" id="reviewExit" aria-label="Exit review">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#5B6B7C" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="lesson-progress-track"><div class="lesson-progress-fill" style="width:${((rv.index+1)/rv.questions.length)*100}%;"></div></div>
+    </div>
+    <div class="paper-card exercise-card">
+      <span class="eyebrow">Review ${rv.index+1} of ${rv.questions.length} · ${escapeHtml(q.langName)}</span>
+      <p class="exercise-prompt">${escapeHtml(q.prompt)}</p>
+      <div class="option-list" id="reviewOptions">
+        ${q.options.map((o,idx)=>`<button class="option-btn" data-idx="${idx}" data-val="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderReviewComplete(){
+  const rv = state.review.session;
+  const total = rv ? rv.questions.length : 0;
+  const correct = rv ? rv.correctCount : 0;
+  return `
+  <div class="complete-wrap">
+    <div class="mascot-bounce" style="margin-bottom:10px;">${foxSvg(90, correct===total && total>0 ? "cheer" : "happy")}</div>
+    <h1 class="complete-title">Review done.</h1>
+    <p class="page-sub" style="margin:0 auto;">You got ${correct} of ${total} right. Words you missed will come back around sooner.</p>
+    <div class="reward-row">
+      <div class="reward-item"><div class="reward-num">${correct}/${total}</div><div class="reward-label">Correct</div></div>
+      <div class="reward-item"><div class="reward-num">${Object.keys(state.review.deck).length}</div><div class="reward-label">Words tracked</div></div>
+      <div class="reward-item"><div class="reward-num">${wordsDueForReview().length}</div><div class="reward-label">Still due</div></div>
+    </div>
+    <button class="btn btn-primary" id="backToDashboard">Continue</button>
+  </div>`;
+}
+
+/* ---------- profile ---------- */
+const PROFILE_AVATARS = ["🦊","🐨","🐼","🐸","🦉","🐯","🐙","🦁","🐵","🐧","🦄","🐢"];
+const PROFILE_COLORS = [
+  {id:"violet", label:"Violet", swatch:"#8B5CF6"},
+  {id:"teal", label:"Teal", swatch:"#10B583"},
+  {id:"stamp", label:"Pink", swatch:"#FF4FA6"},
+  {id:"gold", label:"Gold", swatch:"#FFA930"}
+];
+
+function renderProfile(){
+  const p = state.profile || {avatar:"🦊", color:"violet", title:""};
+  return `
+  <div class="content-wrap">
+    <span class="eyebrow">Your profile</span>
+    <h1 class="page-heading">Customize</h1>
+    <div class="paper-card" style="padding:28px 24px; max-width:560px;">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:22px;">
+        <div id="profileAvatarPreview" style="width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; background:var(--paper-2); border:2px solid var(--${p.color || "violet"});">${p.avatar || "🦊"}</div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:17px;">${escapeHtml(state.userName || "Learner")}</div>
+          <div style="font-size:13px; color:var(--slate);">${p.title ? escapeHtml(p.title) : "No title set"}</div>
+        </div>
+      </div>
+
+      <h3 style="margin:0 0 10px;">Avatar</h3>
+      <div id="avatarGrid" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;">
+        ${PROFILE_AVATARS.map(a => `<button class="avatar-choice-btn ${a===p.avatar?"selected":""}" data-avatar="${a}" style="width:44px; height:44px; border-radius:50%; border:2px solid ${a===p.avatar?"var(--violet)":"var(--line)"}; background:var(--paper-2); font-size:20px; cursor:pointer;">${a}</button>`).join("")}
+      </div>
+
+      <h3 style="margin:0 0 10px;">Color</h3>
+      <div id="colorGrid" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;">
+        ${PROFILE_COLORS.map(c => `<button class="color-choice-btn ${c.id===p.color?"selected":""}" data-color="${c.id}" title="${c.label}" style="width:34px; height:34px; border-radius:50%; border:2px solid ${c.id===p.color?"var(--ink)":"var(--line)"}; background:${c.swatch}; cursor:pointer;"></button>`).join("")}
+      </div>
+
+      <h3 style="margin:0 0 10px;">Title</h3>
+      <input class="field" id="profileTitleInput" placeholder="e.g. Polyglot in training" maxlength="40" value="${escapeHtml(p.title || "")}" style="margin-bottom:8px;" />
+      <p style="font-size:12px; color:var(--slate); margin:0 0 20px;">Shows under your name. Up to 40 characters.</p>
+
+      <h3 style="margin:0 0 10px;">Display name</h3>
+      <input class="field" id="profileNameInput" placeholder="Your name" maxlength="30" value="${escapeHtml(state.userName || "")}" style="margin-bottom:8px;" />
+
+      <button class="btn btn-primary btn-block" id="profileSave" style="margin-top:14px;">Save profile</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- leaderboard ---------- */
+function renderLeaderboard(){
+  const lb = state.leaderboard;
+  return `
+  <div class="content-wrap">
+    <span class="eyebrow">Everyone on TalkTrial</span>
+    <h1 class="page-heading">Leaderboard</h1>
+    <p style="font-size:13px; color:var(--slate); margin:0 0 18px; max-width:520px;">Ranked by total XP. Usernames are visible to everyone here — your own row always shows as "You".</p>
+    <div class="paper-card" style="padding:10px 0; max-width:560px;">
+      ${lb.loading || lb.rows===null ? `
+        <div style="padding:40px; text-align:center; color:var(--slate);">Loading leaderboard…</div>
+      ` : lb.rows.length===0 ? `
+        <div style="padding:40px; text-align:center; color:var(--slate);">No one's on the board yet — finish a unit to claim the top spot.</div>
+      ` : lb.rows.map((row,idx)=>{
+        const isMe = row.userId === state.userId;
+        const rankLabel = idx===0 ? "🥇" : idx===1 ? "🥈" : idx===2 ? "🥉" : (idx+1);
+        return `
+        <div style="display:flex; align-items:center; gap:14px; padding:12px 20px; ${idx>0 ? "border-top:1px solid var(--line);" : ""} ${isMe ? "background:var(--paper-2);" : ""}">
+          <div style="width:28px; text-align:center; font-weight:700; color:var(--slate);">${rankLabel}</div>
+          <div style="width:36px; height:36px; border-radius:50%; background:var(--paper-2); display:flex; align-items:center; justify-content:center; font-size:18px;">${row.avatar}</div>
+          <div style="flex:1; font-weight:600;">${isMe ? "You" : escapeHtml(row.name)}</div>
+          <div style="font-family:var(--font-mono); color:var(--violet); font-weight:700;">${row.xp} XP</div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+/* ================= EVENTS ================= */
+
+function bindEvents(){
+  bindAssistantEvents();
+
+  const brand = document.getElementById("topbarBrand");
+  if(brand) brand.onclick = () => {
+    if(state.screen==="login") return;
+    // Clicking the logo just goes back to the language picker — it should never wipe
+    // completed units, XP, or streak, for guests or signed-in users.
+    state.langSelectedTemp = state.language || null;
+    goTo("language");
+  };
+
+  const profileBtn = document.getElementById("topbarProfileBtn");
+  if(profileBtn) profileBtn.onclick = () => {
+    state.screenBeforeProfile = state.screen;
+    goTo("profile");
+  };
+
+  const leaderboardBtn = document.getElementById("topbarLeaderboardBtn");
+  if(leaderboardBtn) leaderboardBtn.onclick = () => {
+    state.screenBeforeLeaderboard = state.screen;
+    state.leaderboard = { rows:null, loading:false };
+    goTo("leaderboard");
+  };
+
+  if(state.screen==="leaderboard"){
+    // No per-element bindings needed beyond the shared topbar/back handling — the list itself
+    // is read-only. Falling through to the generic exit-via-logo/back behavior is enough.
+  }
+
+  if(state.screen==="login"){
+    document.getElementById("loginSubmit").onclick = () => {
+      state.userName = document.getElementById("loginName").value || "Learner";
+      state.isGuest = false;
+      goTo("language");
+    };
+    document.getElementById("loginGuest").onclick = () => {
+      resetProgressForGuest();
+      state.userName = "Guest";
+      state.isGuest = true;
+      goTo("language");
+    };
+    document.getElementById("loginToggle").onclick = (e) => e.preventDefault();
+  }
+
+  if(state.screen==="language"){
+    document.getElementById("langSearchInput").oninput = (e) => { state.langSearch = e.target.value; render(); document.getElementById("langSearchInput").focus(); document.getElementById("langSearchInput").selectionStart = document.getElementById("langSearchInput").value.length; };
+    document.querySelectorAll(".lang-card").forEach(btn=>{
+      btn.onclick = () => {
+        const code = btn.dataset.code;
+        const grid = document.getElementById("langGrid");
+        const scrollPos = grid ? grid.scrollTop : 0;
+        state.langSelectedTemp = LANGUAGES.find(l=>l[3]===code);
+        render();
+        const newGrid = document.getElementById("langGrid");
+        if(newGrid) newGrid.scrollTop = scrollPos;
+      };
+    });
+    const cont = document.getElementById("langContinue");
+    if(cont) cont.onclick = () => {
+      state.language = state.langSelectedTemp;
+      if(!state.languagesTried) state.languagesTried = [];
+      if(!state.languagesTried.includes(state.language[3])) state.languagesTried.push(state.language[3]);
+      goTo("placement-intro");
+    };
+  }
+
+  if(state.screen==="placement-intro"){
+    document.getElementById("startPlacement").onclick = () => {
+      state.placement = { index:0, answers:{}, active:true, questions: buildPlacementQuestions(state.language[3], state.language[0]) };
+      goTo("placement-test");
+    };
+    document.getElementById("skipPlacement").onclick = () => { applyPlacementLevel("Beginner"); goTo("dashboard"); };
+  }
+
+  if(state.screen==="placement-test"){
+    const questions = state.placement.questions;
+    // Clicking an option always (re)records the answer for the current question — this doubles
+    // as misclick recovery: just click the right one and it overwrites the wrong pick.
+    document.querySelectorAll("#quizOptions .option-btn").forEach(btn=>{
+      btn.onclick = () => {
+        const idx = Number(btn.dataset.idx);
+        const qd = questions[state.placement.index];
+        state.placement.answers[state.placement.index] = { idx, correct: idx===qd.answer };
+        render();
+      };
+    });
+    // Landing on any question — whether via Back or via Continue re-passing one you'd
+    // already gone back over — always shows it fresh and unanswered. Only the question you're
+    // actively leaving keeps its just-submitted answer.
+    const goToPlacementQuestion = (newIndex) => {
+      delete state.placement.answers[newIndex];
+      state.placement.index = newIndex;
+      render();
+    };
+    const backBtn = document.getElementById("quizBack");
+    if(backBtn) backBtn.onclick = () => goToPlacementQuestion(Math.max(0, state.placement.index-1));
+    const continueBtn = document.getElementById("quizContinue");
+    if(continueBtn) continueBtn.onclick = () => {
+      if(state.placement.index >= questions.length-1){
+        const score = Object.values(state.placement.answers).filter(a=>a.correct).length;
+        const total = questions.length;
+        const level = score<=Math.floor(total*0.3) ? "Beginner"
+                    : score<=Math.floor(total*0.5) ? "Elementary"
+                    : score<=Math.floor(total*0.7) ? "Intermediate"
+                    : score<=Math.floor(total*0.85) ? "Upper Intermediate"
+                    : "Advanced";
+        applyPlacementLevel(level);
+        goTo("dashboard");
+      } else {
+        goToPlacementQuestion(state.placement.index+1);
+      }
+    };
+  }
+
+  if(state.screen==="hearts-reviver"){
+    const rv = state.heartsReviver;
+    if(rv.revived){
+      const doneBtn = document.getElementById("reviverDone");
+      if(doneBtn) doneBtn.onclick = () => {
+        state.heartsReviver = null;
+        state.lesson = { unit:null, exIndex:0, correctInUnit:0 };
+        goTo("dashboard");
+      };
+      return;
+    }
+    document.querySelectorAll("#reviverOptions .option-btn").forEach(btn=>{
+      btn.onclick = () => {
+        if(rv.selected!==null) return;
+        const idx = Number(btn.dataset.idx);
+        const correct = idx===rv.question.answer;
+        rv.selected = idx;
+        rv.correct = correct;
+        if(correct){
+          rv.xpGained += HEARTS_REVIVER_XP_PER_CORRECT;
+          state.xp += HEARTS_REVIVER_XP_PER_CORRECT;
+          state.todayXp += HEARTS_REVIVER_XP_PER_CORRECT;
+          playSound(true);
+        } else {
+          playSound(false);
+        }
+        if(rv.xpGained >= HEARTS_REVIVER_GOAL){
+          state.hearts = HEART_MAX;
+          state.heartRegenAt = null;
+          rv.revived = true;
+        }
+        render();
+      };
+    });
+    const nextBtn = document.getElementById("reviverNext");
+    if(nextBtn) nextBtn.onclick = () => {
+      rv.question = buildReviverQuestion();
+      rv.selected = null;
+      rv.correct = null;
+      render();
+    };
+    const exitBtn = document.getElementById("reviverExit");
+    if(exitBtn) exitBtn.onclick = () => {
+      state.heartsReviver = null;
+      state.lesson = { unit:null, exIndex:0, correctInUnit:0 };
+      goTo("dashboard");
+    };
+  }
+
+  if(state.screen==="dashboard"){
+    document.querySelectorAll(".unit-node:not([disabled])").forEach(btn=>{
+      btn.onclick = () => {
+        const unitId = btn.dataset.unit;
+        const units = buildUnits(state.language[3], state.language[0]);
+        const unit = units.find(u=>u.id===unitId);
+        state.lesson = { unit, exIndex:0, correctInUnit:0, wrongCount:0, wrongTotalInUnit:0, combo:0, outOfHearts: state.hearts<=0 };
+        goTo("lesson");
+      };
+    });
+    const retake = document.getElementById("retakePlacement");
+    if(retake) retake.onclick = () => {
+      state.placement = { index:0, answers:{}, active:true, questions: buildPlacementQuestions(state.language[3], state.language[0]) };
+      goTo("placement-test");
+    };
+    const switchLang = document.getElementById("switchLanguage");
+    if(switchLang) switchLang.onclick = () => { state.langSelectedTemp = state.language; goTo("language"); };
+    const startReview = document.getElementById("startReview");
+    if(startReview) startReview.onclick = () => {
+      if(wordsDueForReview().length===0) return;
+      state.review.session = buildReviewSession();
+      goTo("review");
+    };
+  }
+
+  if(state.screen==="lesson"){
+    const lessonExitBtn = document.getElementById("lessonExit");
+    if(lessonExitBtn) lessonExitBtn.onclick = () => goTo("dashboard");
+    if(state.lesson.outOfHearts){
+      const retryBtn = document.getElementById("heartsRetry");
+      if(retryBtn) retryBtn.onclick = () => {
+        const unit = state.lesson.unit;
+        state.lesson = { unit, exIndex:0, correctInUnit:0, wrongCount:0, wrongTotalInUnit:0, combo:0 };
+        render();
+      };
+      document.getElementById("heartsExit").onclick = () => goTo("dashboard");
+      const reviverBtn = document.getElementById("heartsReviverBtn");
+      if(reviverBtn) reviverBtn.onclick = () => {
+        state.heartsReviver = { xpGained:0, question: buildReviverQuestion(), selected:null, correct:null, revived:false };
+        goTo("hearts-reviver");
+      };
+      return;
+    }
+    const soundBtn = document.getElementById("soundToggle");
+    if(soundBtn) soundBtn.onclick = () => { state.soundOn = state.soundOn===false ? true : false; saveProgress(); render(); };
+    const unit = state.lesson.unit;
+    const ex = unit.exercises[state.lesson.exIndex];
+    if(ex.type==="mc" || ex.type==="listen"){
+      document.querySelectorAll("#exOptions .option-btn").forEach(btn=>{
+        btn.onclick = () => {
+          const val = btn.dataset.val;
+          const correct = ex.correctVal ? val===ex.correctVal : Number(btn.dataset.idx)===ex.answer;
+          document.querySelectorAll("#exOptions .option-btn").forEach(b=>{
+            b.disabled = true;
+            const bIsCorrect = ex.correctVal ? b.dataset.val===ex.correctVal : Number(b.dataset.idx)===ex.answer;
+            if(bIsCorrect) b.classList.add("correct");
+          });
+          if(!correct) btn.classList.add("wrong");
+          handleExerciseResult(correct, ex);
+        };
+      });
+      if(ex.type==="listen"){
+        const playBtn = document.getElementById("listenPlayBtn");
+        if(playBtn) playBtn.onclick = () => speakListenPrompt(ex);
+        // Auto-play once as soon as the question appears, same as a real listening exercise.
+        speakListenPrompt(ex);
+      }
+    } else if(ex.type==="speak"){
+      bindSpeakExercise(ex);
+    } else {
+      document.getElementById("typeAnswerSubmit").onclick = () => submitTypeAnswer(ex);
+      document.getElementById("typeAnswerInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitTypeAnswer(ex); });
+    }
+  }
+
+  if(state.screen==="unit-complete" || state.screen==="review-complete"){
+    document.getElementById("backToDashboard").onclick = () => goTo("dashboard");
+  }
+
+  if(state.screen==="review"){
+    const rv = state.review.session;
+    const q = rv.questions[rv.index];
+    document.getElementById("reviewExit").onclick = () => { state.review.session = null; goTo("dashboard"); };
+    document.querySelectorAll("#reviewOptions .option-btn").forEach(btn=>{
+      btn.onclick = () => {
+        const val = btn.dataset.val;
+        const correct = val === q.correctVal;
+        document.querySelectorAll("#reviewOptions .option-btn").forEach(b=>{
+          b.disabled = true;
+          if(b.dataset.val === q.correctVal) b.classList.add("correct");
+        });
+        if(!correct) btn.classList.add("wrong");
+        applyReviewAnswer(q.key, correct);
+        if(correct){ rv.correctCount++; state.xp += 5; state.todayXp += 5; playSound(true); }
+        else playSound(false);
+        setTimeout(() => {
+          rv.index++;
+          if(rv.index >= rv.questions.length){ goTo("review-complete"); }
+          else render();
+        }, 900);
+      };
+    });
+  }
+
+  if(state.screen==="profile"){
+    document.querySelectorAll("#avatarGrid .avatar-choice-btn").forEach(btn=>{
+      btn.onclick = () => { state.profile.avatar = btn.dataset.avatar; render(); };
+    });
+    document.querySelectorAll("#colorGrid .color-choice-btn").forEach(btn=>{
+      btn.onclick = () => { state.profile.color = btn.dataset.color; render(); };
+    });
+    document.getElementById("profileSave").onclick = () => {
+      state.profile.title = document.getElementById("profileTitleInput").value.trim().slice(0,40);
+      const name = document.getElementById("profileNameInput").value.trim();
+      if(name) state.userName = name.slice(0,30);
+      saveProgress();
+      goTo(state.screenBeforeProfile || "dashboard");
+    };
+  }
+}
+
+// Speaks the target-language word/phrase for a "listen" exercise using the browser's built-in
+// text-to-speech. If speech synthesis isn't available, the status line just says so — the
+// exercise still works by re-reading the (now-visible) prompt text on the status line.
+function speakListenPrompt(ex){
+  const statusEl = document.getElementById("listenStatus");
+  if(!window.speechSynthesis || typeof SpeechSynthesisUtterance === "undefined"){
+    if(statusEl) statusEl.textContent = `Audio isn't supported in this browser — the phrase is: "${ex.listenText}"`;
+    return;
+  }
+  try{
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(ex.listenText);
+    if(ex.speechLang) utter.lang = ex.speechLang;
+    if(statusEl) statusEl.textContent = "Listening… tap 🔊 to hear it again.";
+    window.speechSynthesis.speak(utter);
+  }catch(e){
+    if(statusEl) statusEl.textContent = "Couldn't play audio — tap 🔊 to try again.";
+  }
+}
+
+function getCorrectAnswerText(ex){
+  if(!ex) return "";
+  if(ex.type==="mc" || ex.type==="listen") return (ex.correctVal !== undefined && ex.correctVal !== null) ? ex.correctVal : ex.options[ex.answer];
+  return ex.answer;
+}
+
+function submitTypeAnswer(ex){
+  const val = document.getElementById("typeAnswerInput").value.trim();
+  const correct = val.toLowerCase() === ex.answer.toLowerCase();
+  document.getElementById("typeAnswerSubmit").disabled = true;
+  document.getElementById("typeAnswerInput").disabled = true;
+  handleExerciseResult(correct, ex);
+}
+
+// Powers the "speak" exercise type: hold the mic to record, or tap once to start and tap
+// again to stop. Uses the Web Speech API where available; falls back to a self-report tap
+// ("I said it") on browsers that don't support speech recognition at all.
+function bindSpeakExercise(ex){
+  const micBtn = document.getElementById("micBtn");
+  const statusEl = document.getElementById("speakStatus");
+  const transcriptEl = document.getElementById("speakTranscript");
+  if(!micBtn) return;
+
+  const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognitionCtor){
+    statusEl.textContent = "Speech recognition isn't supported in this browser. Say it out loud, then tap the mic to mark it done.";
+    micBtn.onclick = () => {
+      micBtn.disabled = true;
+      micBtn.classList.add("recording");
+      handleExerciseResult(true, ex);
+    };
+    return;
+  }
+
+  const recog = new SpeechRecognitionCtor();
+  recog.lang = ex.speechLang || "en-US";
+  recog.interimResults = false;
+  recog.maxAlternatives = 3;
+
+  let recording = false;
+  let downAt = 0;
+  let quickTapActive = false;
+  let settled = false;
+
+  function normalize(s){
+    return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\p{L}\p{N}\s]/gu,"").trim();
+  }
+
+  function beginRecording(){
+    if(recording || settled) return;
+    recording = true;
+    micBtn.classList.add("recording");
+    statusEl.textContent = "Listening…";
+    transcriptEl.textContent = "";
+    try{ recog.start(); }catch(e){ /* already-started errors are harmless here */ }
+  }
+  function endRecording(){
+    if(!recording) return;
+    recording = false;
+    quickTapActive = false;
+    micBtn.classList.remove("recording");
+    try{ recog.stop(); }catch(e){}
+  }
+
+  micBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if(settled) return;
+    downAt = Date.now();
+    if(!recording){ beginRecording(); }
+    else if(quickTapActive){ endRecording(); }
+  });
+  micBtn.addEventListener("pointerup", () => {
+    if(settled || !recording) return;
+    const held = Date.now() - downAt;
+    if(held < 300) quickTapActive = true;
+    else endRecording();
+  });
+
+  recog.onresult = (event) => {
+    const said = event.results[0][0].transcript || "";
+    transcriptEl.textContent = `You said: "${said}"`;
+    const saidNorm = normalize(said);
+    const answerNorm = normalize(ex.answer);
+    const correct = !!saidNorm && (saidNorm.includes(answerNorm) || answerNorm.includes(saidNorm));
+    settled = true;
+    micBtn.disabled = true;
+    handleExerciseResult(correct, ex);
+  };
+  recog.onerror = () => {
+    recording = false;
+    quickTapActive = false;
+    micBtn.classList.remove("recording");
+    if(!settled) statusEl.textContent = "Didn't catch that — hold or tap the mic to try again.";
+  };
+  recog.onend = () => {
+    if(recording){ recording = false; micBtn.classList.remove("recording"); }
+  };
+}
+
+function handleExerciseResult(correct, ex){
+  state.lesson.comboBonusEarned = 0;
+  if(correct){
+    state.xp += 10; state.todayXp += 10; state.lesson.correctInUnit++;
+    state.lesson.wrongCount = 0;
+    state.lesson.combo = (state.lesson.combo || 0) + 1;
+    state.totalCorrect = (state.totalCorrect || 0) + 1;
+    if(state.lesson.combo > (state.bestCombo||0)) state.bestCombo = state.lesson.combo;
+    if(state.lesson.combo > 0 && state.lesson.combo % 5 === 0){
+      state.xp += 5; state.todayXp += 5;
+      state.lesson.comboBonusEarned = 5;
+    }
+    playSound(true);
+  } else {
+    state.lesson.wrongCount = (state.lesson.wrongCount || 0) + 1;
+    state.lesson.wrongTotalInUnit = (state.lesson.wrongTotalInUnit || 0) + 1;
+    state.lesson.combo = 0;
+    loseHeart();
+    playSound(false);
+    if(state.lesson.wrongCount === 2){
+      openAssistantPanelInPlace();
+      setTimeout(() => sendAssistantMessage("I've gotten this one wrong a couple of times — can you give me a hint without giving away the full answer?"), 400);
+    }
+  }
+  showFeedback(correct, ex);
+}
+
+function showFeedback(correct, ex){
+  const bar = document.createElement("div");
+  bar.className = "feedback-bar " + (correct?"correct":"wrong");
+  const comboText = (correct && state.lesson.comboBonusEarned)
+    ? ` <span class='feedback-sub'>🔥 ${state.lesson.combo}-combo bonus +${state.lesson.comboBonusEarned} XP</span>` : "";
+  const outOfHearts = !correct && state.hearts === 0;
+  const correctAnswerText = correct ? "" : escapeHtml(getCorrectAnswerText(ex));
+  const wrongLine = outOfHearts
+    ? `Out of hearts. <span class='feedback-sub'>Correct answer: <strong>${correctAnswerText}</strong></span>`
+    : `That's not quite it. <span class='feedback-sub'>Correct answer: <strong>${correctAnswerText}</strong></span>`;
+  bar.innerHTML = `
+    <div class="feedback-text">
+      ${correct ? `✓ Correct! <span class='feedback-sub'>+10 XP</span>${comboText}` : wrongLine}
+    </div>
+    <button class="btn ${correct?'btn-stamp':'btn-primary'}" id="feedbackNext">Continue</button>`;
+  document.body.appendChild(bar);
+  document.getElementById("feedbackNext").onclick = () => {
+    bar.remove();
+    if(outOfHearts){
+      state.lesson.outOfHearts = true;
+      render();
+      return;
+    }
+    state.lesson.exIndex++;
+    state.lesson.wrongCount = 0;
+    const unit = state.lesson.unit;
+    if(state.lesson.exIndex >= unit.exercises.length){
+      const earned = 20 + state.lesson.correctInUnit*10;
+      state.xp += 20;
+      state.todayXp += 20;
+      state.unitsCompleted[unit.id] = true;
+      if(state.language) addUnitVocabToReviewDeck(state.language[3], state.language[0], unit);
+      if(state.lesson.correctInUnit === unit.exercises.length) state.hadPerfectUnit = true;
+      if(!state.streakToday){ state.streak += 1; state.streakToday = true; }
+      state.lesson.lastEarned = earned;
+      state.lesson.newBadges = checkBadges();
+      goTo("unit-complete");
+    } else {
+      render();
+    }
+  };
+}
+
+let _foxClickCount = 0;
+let _foxClickResetTimer = null;
+
+function bindAssistantEvents(){
+  const fab = document.getElementById("assistantFab");
+  if(fab) fab.onclick = () => {
+    _foxClickCount++;
+    clearTimeout(_foxClickResetTimer);
+    _foxClickResetTimer = setTimeout(()=>{ _foxClickCount = 0; }, 1400);
+    if(_foxClickCount >= 6){
+      _foxClickCount = 0;
+      if(!state.foundFoxSecret){
+        state.foundFoxSecret = true;
+        fireConfetti();
+        (checkBadges()).forEach((b,i)=> setTimeout(()=>showBadgeToast(b), 300 + i*900));
+      } else {
+        const t = document.createElement("div");
+        t.className = "badge-toast";
+        t.innerHTML = `🌰 The fox is out of secrets for today.`;
+        document.body.appendChild(t);
+        setTimeout(()=>t.remove(), 2600);
+      }
+      return;
+    }
+    state.assistantOpen = !state.assistantOpen; render(); if(state.assistantOpen) scrollAssistantToBottom();
+  };
+  const close = document.getElementById("assistantClose");
+  if(close) close.onclick = () => { state.assistantOpen = false; render(); };
+  const send = document.getElementById("assistantSend");
+  if(send) send.onclick = () => sendAssistantMessage();
+  const input = document.getElementById("assistantInput");
+  if(input){
+    input.addEventListener("keydown", (e) => { if(e.key==="Enter") sendAssistantMessage(); });
+  }
+  const quickHint = document.getElementById("quickHint");
+  if(quickHint) quickHint.onclick = () => sendAssistantMessage("Can you give me a hint for this exercise, without giving away the full answer?");
+  const quickExplain = document.getElementById("quickExplain");
+  if(quickExplain) quickExplain.onclick = () => sendAssistantMessage("Can you explain the grammar point for this lesson a bit more?");
+  scrollAssistantToBottom();
+}
+
+function goTo(screen){
+  regenHearts();
+  state.screen = screen;
+  state.assistantOpen = false;
+  render();
+  window.scrollTo(0,0);
+}
+
+async function init(){
+  const restored = await loadProgress();
+  applyDailyReset();
+  regenHearts();
+  if(restored){
+    state.screen = "dashboard";
+    state.userName = state.userName || "Learner";
+  }
+  render();
+}
+init();
+</script>
+</body>
+</html>
